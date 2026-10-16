@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XX品牌选址模型 · 总览与校准台</title>
+<script src="assets/echarts.min.js"></script>
+<style>
+:root{
+  --ink:#2b2b2b; --sub:#6b6b6b; --line:#e5e0d8; --bg:#f7f4ee; --card:#ffffff;
+  --brand:#8c3b2e; --brand-soft:#f3e6e2; --gold:#b98a2f; --ok:#2e7d4f; --warn:#b7791f; --no:#b3352b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7}
+.wrap{max-width:1100px;margin:0 auto;padding:32px 20px 80px}
+header.top{border-bottom:3px double var(--brand);padding-bottom:16px;margin-bottom:8px}
+h1{font-size:26px;color:var(--brand);letter-spacing:2px}
+.step-tag{font-size:13px;color:#fff;background:var(--brand);border-radius:4px;padding:3px 10px;display:inline-block;margin-bottom:6px;letter-spacing:3px}
+.sub{color:var(--sub);font-size:14px}
+.nav{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.nav a{font-size:13px;color:var(--brand);text-decoration:none;border:1px solid var(--brand);border-radius:8px;padding:6px 14px;background:#fff}
+.nav a:hover{background:var(--brand);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px;margin-top:20px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h2{font-size:18px;color:var(--brand);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.card h2 .num{background:var(--brand);color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;flex:none}
+.hint{font-size:13px;color:var(--sub);margin-bottom:14px}
+.funnel{display:grid;gap:0;margin-top:10px}
+.f-stage{border:1.5px solid var(--brand);border-radius:10px;padding:14px 18px;background:#fff;position:relative}
+.f-stage+.f-stage{margin-top:34px}
+.f-stage+.f-stage::before{content:"▼ 串行生效：上一层不通过，不进入下一层";position:absolute;top:-28px;left:50%;transform:translateX(-50%);font-size:12px;color:var(--sub);white-space:nowrap}
+.f-title{font-weight:700;color:var(--brand);font-size:15px}
+.f-desc{font-size:13px;color:var(--sub);margin-top:2px}
+.f-sub{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+@media(max-width:720px){.f-sub{grid-template-columns:1fr}}
+.f-sub .box{border:1px dashed var(--line);border-radius:8px;padding:10px 12px;font-size:12.5px;background:#faf8f4}
+.f-sub .box b{color:var(--ink);display:block;font-size:13.5px;margin-bottom:2px}
+.chart{width:100%;height:460px;margin-top:8px}
+@media(max-width:720px){.chart{height:380px}}
+table.mini{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+table.mini th,table.mini td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+table.mini th{background:#f3efe7}
+.lv{display:inline-block;padding:1px 10px;border-radius:99px;font-size:12px;font-weight:600}
+.lv.s{background:#e2f1e8;color:var(--ok)} .lv.a{background:#f3e6e2;color:var(--brand)} .lv.b{background:#fdf6e4;color:var(--warn)} .lv.d{background:#f0ece4;color:var(--sub)}
+.verdict{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+.verdict .v{flex:1;min-width:220px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#faf8f4;font-size:13px}
+.verdict .v b{color:var(--brand)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px}
+@media(max-width:720px){.two-col{grid-template-columns:1fr}}
+ul.tight{margin:8px 0 0 18px;font-size:13.5px;color:var(--ink)}
+ul.tight li{margin-bottom:6px}
+footer.ver{text-align:center;color:var(--sub);font-size:12px;margin-top:36px}
+.note{font-size:12px;color:var(--gold);background:#fdf6e4;border:1px dashed #ecd9a0;border-radius:6px;padding:8px 12px;margin-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <span class="step-tag">总览 · 模型全景</span>
+  <h1>模型总览与校准台</h1>
+  <div class="sub">XX品牌选址模型 v2026-10 · 一道双层漏斗、三层串行生效 · 本页数据口径与城市准入页一致（演示密度）</div>
+  <div class="nav">
+    <a href="index.html">第一步 · 城市准入 →</a>
+    <a href="evaluation.html">第二步 · 点位评估 →</a>
+  </div>
+</header>
+
+<!-- ① 架构 -->
+<div class="card">
+  <h2><span class="num">1</span>模型架构：双层漏斗，三层串行</h2>
+  <div class="hint">工具定位是"过滤器与排序器，不是决策器"——排除明显不合格的、给合格的排序，最终签字仍由人。</div>
+  <div class="funnel">
+    <div class="f-stage">
+      <div class="f-title">第一层漏斗 · 城市准入（K₁ × K₂ 乘积闸口）</div>
+      <div class="f-desc">回答"这座城值不值得进"：≥1.10 准入｜0.85–1.10 谨慎（点位线提至 80 分、首批 ≤2 家试点）｜&lt;0.85 暂缓</div>
+    </div>
+    <div class="f-stage">
+      <div class="f-title">第二层漏斗 · 点位评估（闸口 → 评分 → 财务，各自独立、串行生效）</div>
+      <div class="f-sub">
+        <div class="box"><b>闸口层 · 能不能做</b>9 项量特征（OSM 客观抓取，半径写死）→ 决策树定店型 → 五项红线一票否决</div>
+        <div class="box"><b>评分层 · 过不过、排第几</b>百分位相对排名对照在营门店基线，四大板块 100 分制，短板自动降档</div>
+        <div class="box"><b>财务层 · 赚不赚钱、合不合规</b>简版测算（最小盈利假设）＋行业基准校验＋合规两道前置过滤</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ② 48城排名 -->
+<div class="card">
+  <h2><span class="num">2</span>48 城 K₁×K₂ 综合准入值总览（演示密度口径）</h2>
+  <div class="hint">与城市准入页同一套公式与演示密度实时计算，排序结果应与准入页逐个一致——这是"可复算"的自证。虚线为准入线 1.10 与谨慎线 0.85。</div>
+  <div id="cityChart" class="chart" style="height:520px"></div>
+  <div class="note">正式决策请在城市准入页配置高德 Web 服务 Key 切换真实 POI 密度；本图用于流程验证与横向比较。</div>
+</div>
+
+<!-- ③ K2曲线 -->
+<div class="card">
+  <h2><span class="num">3</span>K₂ 钟形分段函数：为什么甜蜜点是 5–12 家/万人</h2>
+  <div class="hint">密度是"市场教育完成"的结果变量：太少＝未教育，太多＝红海，中间才是"需求已验证且未饱和"的进入窗口。绿色区间为甜蜜点（管理页可调）。</div>
+  <div id="k2Chart" class="chart"></div>
+</div>
+
+<!-- ④ 数据源分级 -->
+<div class="card">
+  <h2><span class="num">4</span>数据来源与口径分级</h2>
+  <div class="hint">每个数字都有出处；级别越低，替换与校准责任越明确。</div>
+  <table class="mini">
+    <tr><th>数据</th><th>来源</th><th style="width:70px">级别</th></tr>
+    <tr><td>素养 28.10%（2025）、诊疗 18.5 亿人次</td><td>国家中医药管理局等官方</td><td><span class="lv s">S 官方</span></td></tr>
+    <tr><td>客单 100–200 元占 40.0%、年营收 50 万以下占 57.1%、悬灸 74.2%</td><td>前瞻产业研究院等头部研究院</td><td><span class="lv a">A 研究</span></td></tr>
+    <tr><td>固生堂会员年消费 2,799 元／4.9 次／回头率 69.8%</td><td>上市公司财报（审计口径）</td><td><span class="lv a">A 财报</span></td></tr>
+    <tr><td>广东 83% 涉艾门店为外来业态加装</td><td>地方调研／行业研究院</td><td><span class="lv b">B 调研</span></td></tr>
+    <tr><td>记名卡 ≤5,000 元、服务禁项清单</td><td>商务部预付卡办法、《中医养生保健服务规范（试行）》</td><td><span class="lv s">S 法规</span></td></tr>
+    <tr><td>9 项量特征</td><td>OpenStreetMap / Overpass API（免费实时）</td><td><span class="lv a">A-</span></td></tr>
+    <tr><td>百分位基线</td><td>示例值，待总部实测 ≥30 家在营门店后替换</td><td><span class="lv d">Demo</span></td></tr>
+  </table>
+</div>
+
+<!-- ⑤ 验证结果 -->
+<div class="card">
+  <h2><span class="num">5</span>验证结果：与行业结论对照</h2>
+  <div class="verdict">
+    <div class="v"><b>城市排序一致</b><br>广州 K₁×K₂≈1.66、深圳≈1.70、武汉≈1.34，华中/华南/华东一二线全部过准入线，非目标城市落在谨慎/暂缓区间——与"三大区域一二线城市确定性最高"的行业结论完全对应。</div>
+    <div class="v"><b>三档机制正常</b><br>高线级＋高保健占比城市进入甜蜜点（K₂=1.08）；低分城市正确触发"谨慎准入、首批 ≤2 家试点"提示。</div>
+    <div class="v"><b>全链路可触发</b><br>决策树、红线否决、评分降档、财务三道校验均可现场演示并输出对应结论。</div>
+  </div>
+</div>
+
+<!-- ⑥ 局限与计划 -->
+<div class="card">
+  <h2><span class="num">6</span>已知局限（如实说明）与后续计划</h2>
+  <div class="two-col">
+    <div>
+      <div class="hint" style="margin-bottom:6px">局限</div>
+      <ul class="tight">
+        <li>百分位基线为示例值，首批 ≥30 家实测回灌前只具排序意义</li>
+        <li>OSM 对中国商业 POI 覆盖偏弱，商业类指标可能低估，竞品类以高德/踏勘补录</li>
+        <li>未配置高德 Key 时 POI 与地址解析走演示/降级通道</li>
+        <li>财务测算为签约前过滤口径，非预算书</li>
+        <li>教育度标签为规则标记（示范区身份＋城市排名＋素养水平），非计量模型</li>
+      </ul>
+    </div>
+    <div>
+      <div class="hint" style="margin-bottom:6px">后续计划</div>
+      <ul class="tight">
+        <li>接入高德 API 替换演示通道（地址解析通道已预留，配 Key 即生效）</li>
+        <li>首批 ≥30 家标准店量特征回灌，替换百分位基线</li>
+        <li>每新增 20 家门店，以实际客单价残差回归校准 K₁/K₂ 一次</li>
+        <li>按各市最新统计公报更新收入与医疗保健占比</li>
+        <li>教育度标签随素养年度发布与艾灸馆城市排名滚动复核</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ⑦ 版本记录 -->
+<div class="card">
+  <h2><span class="num">7</span>版本记录</h2>
+  <table class="mini">
+    <tr><th style="width:130px">版本</th><th>变更</th></tr>
+    <tr><td>v2026-10</td><td>新增本总览与校准台（48 城复算总览、K₂ 函数可视化、数据源分级、验证与局限）；城市页新增 K₁ 子项可视化、本机评估记录、演示数据一键填充；点位页新增评估摘要一键复制、手工修正清空同步修复</td></tr>
+    <tr><td>v2026-09</td><td>教育度方法论红线落地（只排序不进乘积）；手填 17→11 项；小区/门牌级地址解析与全链路超时保护；装修单价、客单基准等参数管理页化；K₂ 五段钟形与 ±20% 修正机制</td></tr>
+  </table>
+</div>
+
+<footer class="ver">XX品牌选址模型 v2026-10 ｜ 本页图表由内置城市参数库实时计算，公式与参数可在 ⚙ 管理页审阅</footer>
+</div>
+
+<script>
+/* ===== 与城市准入页（index.html）保持同一套参数与算法；改参数需同步 ===== */
+const CITIES=[
+["北京","一线",2185,85415,10.8,100],["上海","一线",2487,88366,10.8,96],["深圳","一线",1779,81123,10.4,93],["广州","一线",1883,78100,10.6,90],
+["成都","新一线",2127,50600,9.6,88],["杭州","新一线",1252,75600,10.2,85],["重庆","新一线",2110,39700,9.2,83],["武汉","新一线",1377,57000,10.0,81],
+["苏州","新一线",1296,77500,9.9,79],["西安","新一线",1316,44900,9.8,77],["南京","新一线",954,74600,10.0,76],["长沙","新一线",1061,62000,9.8,74],
+["郑州","新一线",1301,45300,9.1,71],["天津","新一线",1364,53500,10.2,70],["青岛","新一线",1038,58500,9.6,68],["宁波","新一线",978,74000,9.7,67],
+["合肥","新一线",985,58000,9.0,66],["东莞","新一线",1044,67000,9.3,65],["佛山","新一线",965,68000,9.4,63],
+["昆明","二线",868,45600,9.4,58],["沈阳","二线",920,49300,10.4,56],["厦门","二线",536,73500,9.3,60],["福州","二线",847,56000,9.2,57],
+["无锡","二线",750,72000,9.6,59],["济南","二线",944,56500,9.7,55],["大连","二线",754,50000,10.1,52],["温州","二线",976,71000,9.5,54],
+["珠海","二线",250,68000,9.3,53],["泉州","二线",888,57000,8.7,50],["烟台","二线",710,54000,9.8,48],
+["石家庄","三线",1123,38000,9.9,45],["哈尔滨","三线",988,38000,10.6,46],["长春","三线",908,34000,10.3,44],["南昌","三线",657,49000,9.1,47],
+["贵阳","三线",610,47000,9.3,43],["南宁","三线",894,36000,8.9,42],["太原","三线",545,44000,10.0,44],["兰州","三线",442,38000,10.5,38],
+["乌鲁木齐","三线",410,44000,9.8,40],["呼和浩特","三线",355,52000,10.1,39],["海口","三线",294,43000,8.8,41],
+["徐州","三线",902,41000,9.4,40],["洛阳","三线",707,35000,9.2,36],["绵阳","三线",490,43000,9.3,35],
+["宜昌","三线",392,44000,9.5,34],["襄阳","三线",526,43000,9.4,33],["银川","四线",290,43000,10.2,30],["西宁","四线",248,36000,10.4,28]
+];
+const W1=0.5,W2=0.3,W3=0.2,BASE_INCOME=41314,K2LO=5,K2HI=12;
+const DEMO_DENSITY={"上海":11,"广州":10.5,"深圳":9.5,"成都":9,"杭州":9,"武汉":8.5,"重庆":8,"长沙":8,
+"北京":7,"苏州":7.5,"南京":7.5,"佛山":7.5,"宁波":7,"东莞":7,"无锡":7,"西安":6.5,"珠海":6.5,"温州":6.5,
+"厦门":6.5,"青岛":6,"福州":6,"郑州":6,"天津":6,"宜昌":6,"襄阳":5.5};
+function hashStr(s){let h=0;for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))>>>0;}return h;}
+function demoDensity(city){
+  if(DEMO_DENSITY[city]!==undefined) return DEMO_DENSITY[city];
+  const h=hashStr(city+'poi');
+  return 1+(h%180)/10;
+}
+function k2Of(d){
+  if(d<2) return 0.85;
+  if(d<K2LO) return 0.95;
+  if(d<K2HI) return 1.08;
+  if(d<20) return 0.95;
+  return 0.80;
+}
+const rows=CITIES.map(([name,tier,pop,income,health,charm])=>{
+  const k1=W1*(income/BASE_INCOME)+W2*(health/9.0)+W3*(charm/75);
+  const k2=k2Of(demoDensity(name));
+  return {name,tier,k1:+k1.toFixed(3),k2,prod:+(k1*k2).toFixed(3)};
+}).sort((a,b)=>b.prod-a.prod);
+
+const tierColor={"一线":"#8c3b2e","新一线":"#b98a2f","二线":"#a89a86","三线":"#c9bcab","四线":"#d8cfc0"};
+
+const cityChart=echarts.init(document.getElementById('cityChart'));
+cityChart.setOption({
+  grid:{left:60,right:30,top:40,bottom:110},
+  tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>{
+    const r=rows[p[0].dataIndex];
+    return `<b>${r.name}</b>（${r.tier}）<br>K₁=${r.k1} × K₂=${r.k2} = <b>${r.prod}</b>`;
+  }},
+  xAxis:{type:'category',data:rows.map(r=>r.name),axisLabel:{rotate:55,fontSize:11}},
+  yAxis:{type:'value',min:0.6,max:1.9,name:'K₁×K₂'},
+  series:[{
+    type:'bar',data:rows.map(r=>({value:r.prod,itemStyle:{color:tierColor[r.tier]||"#a89a86"}})),
+    barMaxWidth:26,
+    markLine:{
+      symbol:'none',
+      data:[
+        {yAxis:1.10,lineStyle:{color:"#2e7d4f",type:"dashed",width:2},label:{formatter:"准入线 1.10",position:"insideEndTop",color:"#2e7d4f"}},
+        {yAxis:0.85,lineStyle:{color:"#b3352b",type:"dashed",width:1.5},label:{formatter:"谨慎线 0.85",position:"insideEndTop",color:"#b3352b"}}
+      ]
+    }
+  }]
+});
+
+const k2Chart=echarts.init(document.getElementById('k2Chart'));
+const xs=[],ys=[];
+for(let d=0;d<=30;d+=0.5){xs.push(d);ys.push(k2Of(d));}
+k2Chart.setOption({
+  grid:{left:60,right:30,top:40,bottom:50},
+  tooltip:{trigger:'axis',formatter:p=>`密度 ${p[0].value} 家/万人 → K₂ 初值 ${p[1].value}`},
+  xAxis:{type:'value',min:0,max:30,name:'密度（家/万人）'},
+  yAxis:{type:'value',min:0.7,max:1.2,name:'K₂ 初值'},
+  series:[{
+    type:'line',step:'end',data:xs.map((x,i)=>[x,ys[i]]),
+    lineStyle:{color:"#8c3b2e",width:3},itemStyle:{color:"#8c3b2e"},
+    markArea:{silent:true,itemStyle:{color:"rgba(46,125,79,0.12)"},data:[[{xAxis:5,label:{show:true,position:"insideTop",formatter:"甜蜜点 5–12",color:"#2e7d4f"}},{xAxis:12}]]},
+    markLine:{symbol:'none',data:[
+      {xAxis:2,lineStyle:{color:"#b7791f",type:"dotted"},label:{formatter:"未教育线 2"}},
+      {xAxis:20,lineStyle:{color:"#b3352b",type:"dotted"},label:{formatter:"红海线 20"}}
+    ]}
+  }]
+});
+
+window.addEventListener('resize',()=>{cityChart.resize();k2Chart.resize();});
+</script>
+</body>
+</html>

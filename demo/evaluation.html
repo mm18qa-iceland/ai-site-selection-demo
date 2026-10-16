@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XX品牌选址模型 · 第二步：标准店点位评估</title>
+<style>
+:root{
+  --ink:#2b2b2b; --sub:#6b6b6b; --line:#e5e0d8; --bg:#f7f4ee; --card:#ffffff;
+  --brand:#8c3b2e; --brand-soft:#f3e6e2; --gold:#b98a2f; --ok:#2e7d4f; --warn:#b7791f; --no:#b3352b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7}
+.wrap{max-width:1000px;margin:0 auto;padding:32px 20px 80px}
+header.top{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px double var(--brand);padding-bottom:16px;margin-bottom:8px}
+h1{font-size:26px;color:var(--brand);letter-spacing:2px}
+.step-tag{font-size:13px;color:#fff;background:var(--brand);border-radius:4px;padding:3px 10px;display:inline-block;margin-bottom:6px;letter-spacing:3px}
+.sub{color:var(--sub);font-size:14px}
+.gear{cursor:pointer;font-size:20px;color:var(--sub);border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:#fff}
+.banner{margin:14px 0;padding:10px 16px;border-radius:8px;font-size:13px}
+.banner.demo{background:#fff8e6;border:1px solid #ecd9a0;color:#7a5b12}
+.banner.live{background:#e9f5ee;border:1px solid #bfe0cd;color:#256b45}
+.citybar{background:var(--brand-soft);border:1px solid #e0c9c3;border-radius:10px;padding:14px 18px;margin-top:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.citybar b{color:var(--brand);font-size:17px}
+.citybar span{font-size:13px;color:var(--sub)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px;margin-top:20px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h2{font-size:18px;color:var(--brand);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.card h2 .num{background:var(--brand);color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;flex:none}
+.card .hint{font-size:13px;color:var(--sub);margin-bottom:14px}
+.grid{display:grid;gap:14px}
+.grid.c2{grid-template-columns:1fr 1fr}.grid.c3{grid-template-columns:1fr 1fr 1fr}.grid.c4{grid-template-columns:1fr 1fr 1fr 1fr}
+@media(max-width:760px){.grid.c2,.grid.c3,.grid.c4{grid-template-columns:1fr}}
+label{font-size:13px;color:var(--sub);display:block;margin-bottom:4px}
+input,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:#fff;color:var(--ink)}
+input:focus,select:focus{outline:2px solid var(--brand-soft);border-color:var(--brand)}
+button{cursor:pointer;border:none;border-radius:8px;padding:11px 22px;font-size:15px;letter-spacing:1px}
+.btn-main{background:var(--brand);color:#fff}.btn-main:hover{background:#753126}
+.btn-ghost{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+.btn-line{background:#f0ece4;color:var(--ink)}
+.kv{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.kv b{font-weight:600}
+.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:760px){.metric-grid{grid-template-columns:1fr 1fr}}
+.metric{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#faf8f4}
+.metric .m-name{font-size:12px;color:var(--sub)}
+.metric .m-val{font-size:22px;font-weight:700;color:var(--brand)}
+.metric .m-unit{font-size:12px;color:var(--sub);font-weight:400}
+.metric .m-pct{font-size:12px;margin-top:2px}
+.metric input{width:100%;padding:4px 8px;font-size:14px;margin-top:4px;border:1px dashed var(--line);border-radius:6px}
+.tree{background:#faf7f1;border:1px solid var(--line);border-radius:8px;padding:14px 18px;font-size:14px;line-height:2;font-family:ui-monospace,Consolas,monospace;white-space:pre-wrap}
+.redline{border:1px solid #ecc6c2;border-radius:10px;padding:14px 16px;margin-top:12px;background:#fffafa}
+.redline .q{font-size:14px;font-weight:600;margin-bottom:8px}
+.radio-row{display:flex;gap:18px;font-size:14px}
+.radio-row label{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;color:var(--ink)}
+.radio-row input{width:auto}
+.item{padding:10px 0;border-bottom:1px dashed var(--line)}
+.item:last-child{border-bottom:none}
+.item .q{font-size:14px;font-weight:600;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px}
+.item .q .tag{font-size:11px;font-weight:400;color:#fff;background:#a89a86;border-radius:4px;padding:1px 8px;flex:none;height:fit-content}
+.item .rule{font-size:12px;color:var(--sub);margin-top:4px}
+.result-box{border-radius:12px;padding:24px;text-align:center;margin-top:10px}
+.result-box .score{font-size:52px;font-weight:700;line-height:1.1}
+.result-box .level{font-size:20px;font-weight:600;margin-top:4px}
+.result-box .desc{font-size:13px;color:var(--sub);margin-top:8px}
+.rs-ok{background:#e9f5ee;border:1px solid #bfe0cd}.rs-ok .score,.rs-ok .level{color:var(--ok)}
+.rs-warn{background:#fdf6e4;border:1px solid #ecd9a0}.rs-warn .score,.rs-warn .level{color:var(--warn)}
+.rs-no{background:#fbeeed;border:1px solid #ecc6c2}.rs-no .score,.rs-no .level{color:var(--no)}
+.groupscore{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+@media(max-width:760px){.groupscore{grid-template-columns:1fr 1fr}}
+.groupscore .cell{border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center}
+.groupscore .cell .n{font-size:12px;color:var(--sub)}
+.groupscore .cell .v{font-size:20px;font-weight:700;color:var(--brand)}
+.groupscore .cell.bad .v{color:var(--no)}
+.next-bar{margin-top:28px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+#adminModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;align-items:flex-start;justify-content:center;overflow:auto}
+#adminModal .panel{background:#fff;border-radius:12px;max-width:820px;width:94%;margin:40px auto;padding:28px}
+#adminModal h3{color:var(--brand);margin-bottom:14px}
+textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px}
+.note{font-size:12px;color:var(--gold);background:#fdf6e4;border:1px dashed #ecd9a0;border-radius:6px;padding:8px 12px;margin-top:10px}
+.alert-strip{border-radius:8px;padding:10px 14px;font-size:13px;margin-top:8px}
+.alert-strip.ok{background:#e9f5ee;color:var(--ok)}
+.alert-strip.warn{background:#fdf6e4;color:var(--warn)}
+.alert-strip.no{background:#fbeeed;color:var(--no)}
+details{margin-top:14px;border:1px solid var(--line);border-radius:8px;background:#faf8f4}
+details summary{cursor:pointer;padding:10px 14px;font-size:14px;font-weight:600;color:var(--brand)}
+details .body{padding:0 16px 14px;font-size:13px;color:var(--sub)}
+.demo-btn-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+footer.ver{text-align:center;color:var(--sub);font-size:12px;margin-top:36px}
+@media print{
+  body{background:#fff}
+  .no-print{display:none!important}
+  .card{box-shadow:none;break-inside:avoid}
+  .wrap{padding:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div>
+    <span class="step-tag">第二步 / 共两步</span>
+    <h1>标准店点位评估</h1>
+    <div class="sub">量特征 → 商圈决策树 → 红线闸口 → 百分位评分 → 财务测算（仅适用标准店）｜ <a href="overview.html" style="color:var(--brand)">模型总览 →</a></div>
+  </div>
+  <div class="gear no-print" onclick="openAdmin()" title="管理设置">⚙</div>
+</header>
+
+<div id="modeBanner" class="banner live no-print"></div>
+<div class="citybar" id="citybar"></div>
+
+<!-- ① 地址与坐标 -->
+<div class="card">
+  <h2><span class="num">1</span>门店地址</h2>
+  <div class="hint">地址只用于换取坐标，后续所有指标计算只看经纬度。解析优先级：高德地理编码（有Key时小区/门牌级最准，并显示命中精度级别）→ OpenStreetMap（免费无需Key，小区覆盖弱）→ 手工拾取坐标兜底（米级精度）。各通道均有超时保护，失败会自动降级，不会卡住。</div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <input id="addr" placeholder="城市+区县+街道，例如：武汉市武昌区楚河汉街" style="flex:2;min-width:240px">
+    <input id="addrDetail" placeholder="小区/楼盘/门牌（选填，聚焦到社区），例如：万达华府3号楼" style="flex:2;min-width:240px">
+    <button class="btn-main no-print" onclick="analyzeAddr()">解析地址</button>
+  </div>
+  <div class="grid c3" style="margin-top:14px">
+    <div><label>经度（可手工填写）</label><input id="lng"></div>
+    <div><label>纬度（可手工填写）</label><input id="lat"></div>
+    <div><label>解析状态</label><input id="geoStatus" readonly></div>
+  </div>
+  <div class="note">自动解析失败时：打开高德地图网页版（amap.com）找到门店位置 → 右键/长按拾取坐标 → 手工填入经纬度，即可继续提取量特征。坐标是本页唯一必需的地理输入。</div>
+</div>
+
+<!-- ② 第一层：量特征 -->
+<div class="card">
+  <h2><span class="num">2</span>第一层 · 位置量特征（9项指标）</h2>
+  <div class="hint">半径全部写死、不可调：<b>过不了街，对面人流就不是你的客流</b>——所以过街设施只卡150m。数据来自OpenStreetMap（Overpass API，免费无需Key），提取后可手工修正。</div>
+  <div class="demo-btn-row">
+    <button class="btn-main no-print" id="osmBtn" onclick="fetchOsm()">提取量特征（Overpass API）</button>
+    <button class="btn-ghost no-print" onclick="fillDemo()" title="无网络或未配置Key时，用于完整流程演示；所有数值为示例，非真实抓取">填入演示数据</button>
+  </div>
+  <span id="osmStatus" style="font-size:13px;color:var(--sub);margin-left:10px"></span>
+  <div class="metric-grid" style="margin-top:16px" id="metricGrid"></div>
+  <details class="no-print">
+    <summary>9项指标的口径与商业含义</summary>
+    <div class="body">
+      ①500m建筑面积（建筑轮廓面积×层数累加，万㎡）——片区人口承载量的物理上限；②500m餐饮数——烟火气与客流活力的代理指标；③最近商场距离——商业能级；④最近地铁口距离——轨道可达性；⑤300m公交站数——地面公交可达性；⑥150m过街设施——决定街道对面的人流是否属于你；⑦300m停车场数——驾车客群可达性（艾灸客群开车比例高）；⑧120m道路数——街口/铺位的路网密度；⑨500m街道总长——可步行街道网络密度。<br>
+      <b>数据边界须知：</b>OpenStreetMap在中国大陆的商用小商户覆盖弱于高德，但道路、地铁口、公交站、过街设施、停车场、建筑轮廓等基础设施数据质量良好，本层9项全部属于基础设施，适配OSM。商业类POI（竞品/替代品/协同业态）仍走高德或手工。
+    </div>
+  </details>
+</div>
+
+<!-- ③ 第二层：商圈类型决策树 -->
+<div class="card">
+  <h2><span class="num">3</span>第二层 · 商圈类型决策树</h2>
+  <div class="hint">不再用加权投票，改用确定性决策树（每层判断可在下方复核原始数值）：</div>
+  <div class="tree" id="treeBox">待提取量特征后自动运行决策树……</div>
+  <div class="grid c2" style="margin-top:14px">
+    <div><label>决策树判定结果</label><input id="typeAuto" readonly></div>
+    <div>
+      <label>最终确认（可人工修正，含景区店）</label>
+      <select id="typeFinal" onchange="onTypeChange()">
+        <option value="社区店">社区店</option>
+        <option value="商超店">商超店（商场型）</option>
+        <option value="写字楼店">写字楼店</option>
+        <option value="混合街铺">混合街铺</option>
+        <option value="旅游景区店">旅游景区店（须总部专项审批）</option>
+      </select>
+    </div>
+  </div>
+  <div class="note" id="typeNote"></div>
+</div>
+
+<!-- ④ 红线闸口 -->
+<div class="card">
+  <h2><span class="num">4</span>闸口 · 一票否决红线核查</h2>
+  <div class="hint">以下五项为工程＋合规红线，<b>任一不符合即直接淘汰</b>，不再进入评分。商务公寓10楼以上无独立排烟条件的点位，第一项即不符合。</div>
+  <div id="redlines"></div>
+  <div id="redlineVerdict" style="margin-top:14px"></div>
+</div>
+
+<!-- ⑤ 第三层：百分位评分 -->
+<div class="card">
+  <h2><span class="num">5</span>第三层 · 百分位评分</h2>
+  <div class="hint">不评绝对值，只比相对排名：每项指标对照基线（真实在营门店的量特征分布）算百分位，距离类反向计。客流基础、可达性、位置质量三组<b>组内先平均、组间再平均</b>——刻意两级平均，防止可达性4个指标压过客流基础3个。<b>竞品不计分，只提示。</b></div>
+
+  <h3 style="font-size:15px;color:var(--brand);margin-top:16px">位置模型（60分，三组两级平均）</h3>
+  <div id="locScoreDetail" style="font-size:13px;color:var(--sub);margin-top:6px"></div>
+
+  <h3 style="font-size:15px;color:var(--brand);margin-top:18px">补充手填项（进入对应组）</h3>
+  <div class="grid c2" style="margin-top:8px">
+    <div class="item">
+      <div class="q">目标客群占比：周边30–65岁常住人口占比（档位判断）<span class="tag">踏勘</span></div>
+      <select id="in_age" onchange="recalcAll()">
+        <option value="">— 请选择 —</option>
+        <option value="90">≥40%（成熟/老龄社区，明显偏高）</option>
+        <option value="75">30%–40%</option>
+        <option value="55">20%–30%</option>
+        <option value="30">10%–20%</option>
+        <option value="10">＜10%（年轻化商圈/新建区）</option>
+      </select>
+      <div class="rule">档位即百分位映射（评分规则不变）；物业访谈＋人口普查街道数据做档位判断即可，无需精确百分比。41–50岁为艾灸客群存量主力（占57.8%），31–40岁为增量主力</div>
+    </div>
+    <div class="item">
+      <div class="q">差异化卡位：周边调理类客单价与XX品牌定位（200–500元品质调理带）的错位程度<span class="tag">踏勘</span></div>
+      <select id="in_gap" onchange="recalcAll()">
+        <option value="">— 请选择 —</option>
+        <option value="85">明显错位，空白带成立</option>
+        <option value="55">部分错位</option>
+        <option value="20">正面同质竞争</option>
+      </select>
+      <div class="rule">暗访周边足疗/按摩/美容院客单价后判断；此指标承接"避同品类、近替代品、盯空白带"中的卡位逻辑</div>
+    </div>
+  </div>
+
+  <h3 style="font-size:15px;color:var(--brand);margin-top:18px">竞争与生态提示区（不计分，只提示）</h3>
+  <div class="grid c2" style="margin-top:8px">
+    <div><label>1km内直接竞品（艾灸馆，家）</label><input type="number" id="in_comp" oninput="recalcAll()"></div>
+    <div><label>500m内调理/健康业态（足疗/按摩/SPA/瑜伽/药房/体检合计，家）</label><input type="number" id="in_subs" oninput="recalcAll()"></div>
+  </div>
+  <div class="hint" style="margin-top:6px">替代品与协同业态已合并为一项：二者提示逻辑同源（周边"为身体付费"的生态是否成立），一次踏勘数完。配置高德Key后可在管理页开启自动拉取；否则由踏勘填报（大众点评/实地走访）。提示文案按城市教育度自动区分「成熟区的密度竞争」与「空白区的教育成本」。</div>
+  <div id="compHints"></div>
+
+  <h3 style="font-size:15px;color:var(--brand);margin-top:18px">商业经济性（20分）</h3>
+  <div class="grid c2" style="margin-top:8px">
+    <div class="item"><div class="q">月租金（元）<span class="tag">踏勘</span></div><input type="number" id="in_d1" oninput="recalcAll()"></div>
+    <div class="item"><div class="q">使用面积（㎡，标准店硬性要求≥80㎡，建议≥100㎡）<span class="tag">踏勘</span></div><input type="number" id="in_d2" oninput="recalcAll()"></div>
+    <div class="item"><div class="q">租金单价（元/㎡/天，自动计算）<span class="tag">自动</span></div><input id="in_d3" readonly>
+      <div class="rule" id="d3rule"></div></div>
+    <div class="item"><div class="q">可签约租期与递增结构<span class="tag">踏勘</span></div>
+      <select id="in_d4" onchange="recalcAll()"><option value="">— 请选择 —</option><option value="100">≥5年且无递增</option><option value="80">3–5年，递增<5%</option><option value="60">3年，递增<5%</option><option value="35">2–3年，递增>5%</option></select></div>
+  </div>
+  <div class="hint" style="margin-top:6px">精简说明（v2026-09）：原「免租期」属一次性现金流优惠，移入财务测算的转让费/押金口径体现，不再占评分；原「商铺性质」（临街/内铺）与商圈类型决策树及商场距离指标重复度量，已删除——同一份证据只计一次分。</div>
+
+  <h3 style="font-size:15px;color:var(--brand);margin-top:18px">工程合规余量（10分，红线已过后的改造裕度）</h3>
+  <div class="grid c2" style="margin-top:8px">
+    <div class="item"><div class="q">电容量（kW）<span class="tag">踏勘</span></div><input type="number" id="in_e2" oninput="recalcAll()"><div class="rule">≥25→100｜15→80｜12→60｜8→40。器械灸/艾灸仪已占行业25.2%，电容量决定设备化路线的上限</div></div>
+    <div class="item"><div class="q">排烟管道新建长度（m，已有填0）<span class="tag">踏勘</span></div><input type="number" id="in_e3" oninput="recalcAll()"><div class="rule">0→100｜≤10→80｜≤20→50｜>20→20。直接决定装修改造成本</div></div>
+  </div>
+  <div class="hint" style="margin-top:6px">精简说明（v2026-09）：原「层高」「排水」两项已删除——层高红线（施工后净高≥2.4m）已在闸口一票否决，余量评分属重复度量；艾灸服务非涉水业态，排水改造需求低，保留评分项的信息增量不足。</div>
+
+  <h3 style="font-size:15px;color:var(--brand);margin-top:18px">增长与稳定性（10分）</h3>
+  <div class="grid c2" style="margin-top:8px">
+    <div class="item"><div class="q">商圈人流趋势（近12个月）<span class="tag">踏勘</span></div>
+      <select id="in_f2" onchange="recalcAll()"><option value="">— 请选择 —</option><option value="100">上升</option><option value="70">稳定</option><option value="20">下降</option></select>
+      <div class="rule">最直接的先行指标，分时段蹲点即可判断</div></div>
+    <div class="item"><div class="q">社区/商圈成熟度<span class="tag">踏勘</span></div>
+      <select id="in_f3" onchange="recalcAll()"><option value="">— 请选择 —</option><option value="100">成熟且稳定</option><option value="80">成长中</option><option value="30">新建未入住</option></select>
+      <div class="rule">已含规划落地情况的综合判断</div></div>
+  </div>
+  <div class="hint" style="margin-top:6px">精简说明（v2026-09）：原「政府规划」项已删除——查控规公示获取成本最高，且「已落地规划」与「商圈成熟度」高度相关（成熟商圈的规划大多已兑现），同信息不重复计分；重大规划变量由总部在城市准入阶段研判。</div>
+
+  <div class="groupscore" id="groupscore"></div>
+</div>
+
+<!-- ⑥ 综合结论 -->
+<div class="card">
+  <h2><span class="num">6</span>综合结论</h2>
+  <div id="resultBox" class="result-box rs-warn">
+    <div class="score" id="finalScore">—</div>
+    <div class="level" id="finalLevel">请先提取量特征并完成红线核查</div>
+    <div class="desc" id="finalDesc"></div>
+  </div>
+  <div class="kv"><span>结论说明</span><b id="verdictText" style="max-width:70%;text-align:right">—</b></div>
+  <div class="hint" id="finHint" style="margin-top:8px"></div>
+  <div style="margin-top:14px" class="no-print"><button class="btn-ghost" onclick="copySummary()">复制评估摘要（用于归档/汇报）</button></div>
+</div>
+
+<!-- ⑦ 财务测算 -->
+<div class="card" id="finCard" style="display:none">
+  <h2><span class="num">7</span>简版财务测算（评分通过后启用）</h2>
+  <div class="hint">收入端参数已由城市系数自动修正（客单价基准 × K₁ × K₂）；装修投入按面积×装修单价（管理页可调）自动估算；爬坡期按城市教育度标签取值（成熟区2–3个月／爬坡区3–4个月／空白区4–6个月）。所有预填值均可手工调整。</div>
+  <div class="grid c3">
+    <div><label>月租金（元）</label><input id="fRent" type="number" oninput="calcFin()"></div>
+    <div><label>使用面积（㎡）</label><input id="fArea" type="number" oninput="calcFin()"></div>
+    <div><label>床位数（张，标准店≥4）</label><input id="fBeds" type="number" value="5" oninput="calcFin()"></div>
+    <div><label>月人工成本（元）</label><input id="fLabor" type="number" oninput="calcFin()"></div>
+    <div><label>其他月固定成本（元）</label><input id="fOther" type="number" value="3000" oninput="calcFin()"></div>
+    <div><label>修正后客单价（元）</label><input id="fPrice" type="number" oninput="calcFin()"></div>
+    <div><label>日均翻床率（次/床）</label><input id="fTurn" type="number" step="0.1" oninput="calcFin()"></div>
+    <div><label>变动成本率（耗材＋提成 %）</label><input id="fVar" type="number" value="35" oninput="calcFin()"></div>
+    <div><label>月营业天数（天）</label><input id="fDays" type="number" value="30" oninput="calcFin()"></div>
+    <div><label>产品零售及其他月收入（元，"重产品"战略收入）</label><input id="fRetail" type="number" value="15000" oninput="calcFin()"></div>
+    <div><label>装修总投入（元）</label><input id="fDecor" type="number" oninput="calcFin()"></div>
+    <div><label>转让费（元）</label><input id="fTransfer" type="number" value="0" oninput="calcFin()"></div>
+    <div><label>押金（元，默认3个月租金）</label><input id="fDeposit" type="number" oninput="calcFin()"></div>
+  </div>
+  <div id="finOut" style="margin-top:16px"></div>
+</div>
+
+<div class="next-bar no-print">
+  <div style="display:flex;gap:10px">
+    <button class="btn-line" onclick="location.href='index.html'">← 返回城市准入</button>
+    <button class="btn-line" onclick="window.print()">导出PDF / 打印</button>
+  </div>
+  <button class="btn-main" onclick="recalcAll()">重新计算</button>
+</div>
+
+<footer class="ver no-print">XX品牌选址模型 v2026-10 ｜ 纯前端单文件应用 · 地理数据来自 OpenStreetMap（Overpass API）· 商业POI可配置高德Key</footer>
+
+</div>
+
+<!-- 管理页 -->
+<div id="adminModal">
+  <div class="panel">
+    <h3>管理设置（总部专用）</h3>
+    <div id="adminLock">
+      <label>管理密码</label>
+      <div style="display:flex;gap:8px">
+        <input type="password" id="adminPwd" placeholder="与城市准入页同一密码" style="flex:1">
+        <button class="btn-main" onclick="unlockAdmin()">解锁</button>
+        <button class="btn-line" onclick="closeAdmin()">关闭</button>
+      </div>
+    </div>
+    <div id="adminBody" style="display:none">
+      <div class="grid c4">
+        <div><label>位置模型权重（默认60）</label><input id="wLoc" type="number"></div>
+        <div><label>商业经济权重</label><input id="wD" type="number"></div>
+        <div><label>工程余量权重</label><input id="wE" type="number"></div>
+        <div><label>增长稳定权重</label><input id="wF" type="number"></div>
+      </div>
+      <div class="grid c3" style="margin-top:12px">
+        <div><label>「优先选址」分数线</label><input id="lGood" type="number"></div>
+        <div><label>「可开店」分数线</label><input id="lOk" type="number"></div>
+        <div><label>「谨慎」分数线</label><input id="lWarn" type="number"></div>
+      </div>
+      <div class="grid c3" style="margin-top:12px">
+        <div><label>客单价基准（元）</label><input id="cfgPrice" type="number"></div>
+        <div><label>装修估算单价（元/㎡）</label><input id="cfgDecor" type="number"></div>
+        <div><label>社区店日翻床率</label><input id="tSq" type="number" step="0.1"></div>
+        <div><label>商超店日翻床率</label><input id="tSc" type="number" step="0.1"></div>
+        <div><label>写字楼店日翻床率</label><input id="tXzl" type="number" step="0.1"></div>
+        <div><label>混合街铺日翻床率</label><input id="tHh" type="number" step="0.1"></div>
+        <div><label>景区店日翻床率</label><input id="tJq" type="number" step="0.1"></div>
+      </div>
+      <label style="margin-top:12px">百分位基线库（JSON：每项指标一组真实在营门店的量特征样本值，数组长度=样本门店数；当前为示例基线，总部实测≥30家门店后替换）</label>
+      <textarea id="cfgBaselines" rows="12" style="font-family:ui-monospace,Consolas,monospace;font-size:12px"></textarea>
+      <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+        <button class="btn-main" onclick="saveAdmin()">保存设置</button>
+        <button class="btn-ghost" onclick="resetPointCfg()">恢复点位参数出厂值</button>
+        <button class="btn-line" onclick="closeAdmin()">关闭</button>
+      </div>
+      <div class="note">API Key、管理密码、城市参数库请在「城市准入页」的管理设置中维护，两页共用。</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= 配置（与城市准入页共用 localStorage） ================= */
+const LS_CFG='xunai_admin_cfg', LS_CITY='xunai_city_pass';
+
+/* 百分位基线（示例值，总部实测≥30家在营门店后于管理页替换） */
+const DEFAULT_BASELINES = {
+  bldArea500:  [8,12,15,18,22,25,28,32,35,38,42,45,48,52,55,58,62,66,70,75],
+  food500:     [5,10,18,25,35,45,55,65,75,85,95,105,115,125,135,145,155,165,175,190],
+  mallDist:    [100,180,260,350,450,550,700,850,1000,1200,1400,1700,2000,2300,2600,3000,3400,3800,4300,5000],
+  subwayDist:  [80,150,220,300,380,450,550,650,750,850,1000,1150,1300,1450,1600,1800,2000,2200,2400,2600],
+  bus300:      [0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,9,10,11,14],
+  cross150:    [0,0,1,1,1,2,2,2,3,3,3,4,4,4,5,5,6,6,7,8],
+  park300:     [0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,8,8,9,10,12],
+  roads120:    [1,1,2,2,2,3,3,3,4,4,4,5,5,5,6,6,7,8,9,12],
+  streetLen500:[1500,2000,2400,2800,3200,3600,4000,4400,4800,5200,5600,6000,6400,6800,7200,7600,8000,8400,8800,9200]
+};
+
+const POINT_DEFAULTS = {
+  wLoc:60, wD:20, wE:10, wF:10,
+  lGood:80, lOk:65, lWarn:50,
+  basePrice:220,
+  turnRates:{"社区店":2.0,"商超店":2.4,"写字楼店":2.2,"混合街铺":2.0,"旅游景区店":2.8},
+  rentBench:2.5,
+  decorCost:1500,   // 装修估算单价（元/㎡，标准店，v2026-09新增）
+  baselines: DEFAULT_BASELINES
+};
+let CFG=(()=>{try{return JSON.parse(localStorage.getItem(LS_CFG))||{}}catch(e){return {}}})();
+for(const k in POINT_DEFAULTS){ if(CFG[k]===undefined) CFG[k]=JSON.parse(JSON.stringify(POINT_DEFAULTS[k])); }
+let CITY=null;
+try{ CITY=JSON.parse(localStorage.getItem(LS_CITY)||'null'); }catch(e){}
+
+/* ================= 量特征定义（9项，半径写死） ================= */
+const METRICS=[
+  {key:'bldArea500', name:'500m内建筑面积', unit:'万㎡', type:'higher', desc:'建筑轮廓×层数'},
+  {key:'food500',    name:'500m内餐饮数',   unit:'家',   type:'higher', desc:'restaurant/cafe/fast_food等'},
+  {key:'mallDist',   name:'最近商场距离',   unit:'m',    type:'lower',  desc:'3km内最近shop=mall'},
+  {key:'subwayDist', name:'最近地铁口距离', unit:'m',    type:'lower',  desc:'3km内最近subway_entrance'},
+  {key:'bus300',     name:'300m公交站数',   unit:'个',   type:'higher', desc:'bus_stop'},
+  {key:'cross150',   name:'150m过街设施',   unit:'处',   type:'higher', desc:'highway=crossing'},
+  {key:'park300',    name:'300m停车场数',   unit:'个',   type:'higher', desc:'amenity=parking'},
+  {key:'roads120',   name:'120m内道路数',   unit:'条',   type:'higher', desc:'车行道+街巷'},
+  {key:'streetLen500',name:'500m街道总长',  unit:'m',    type:'higher', desc:'可步行路网总长'}
+];
+let M={};  // 量特征当前值
+let OSM_EXTRA={mall300:0, officeN:0, resN:0}; // 决策树用附加量
+
+/* ================= 初始化 ================= */
+function init(){
+  const b=document.getElementById('modeBanner');
+  b.className='banner live no-print';
+  b.innerHTML='量特征数据源：OpenStreetMap/Overpass API（免费无需Key，实时真实数据）。商业POI（竞品/替代/协同）：'+(CFG.amapKey?'高德API（已配置Key）':'未配置高德Key，请踏勘手工填报')+'。';
+  const bar=document.getElementById('citybar');
+  if(CITY&&CITY.cityName){
+    const edu=CITY.edu||'爬坡';
+    const ramp={'成熟':'2–3个月','爬坡':'3–4个月','空白':'4–6个月'}[edu];
+    bar.innerHTML=`<div><b>${CITY.cityName}</b>　<span>城市综合值 K₁×K₂=${CITY.score}（${CITY.level}）｜客单价修正系数 ×${(CITY.k1*CITY.k2).toFixed(3)}｜教育度：${edu}区，新店爬坡期假设 ${ramp}</span></div>
+      <a href="index.html" style="font-size:13px;color:var(--brand)">重新评估城市 →</a>`;
+  }else{
+    bar.innerHTML=`<div><b style="color:var(--no)">未完成城市准入</b>　<span>本工具为串行闸口流程，请先在第一步完成城市准入评估。</span></div>
+      <a href="index.html" style="font-size:13px;color:var(--brand)">← 前往城市准入</a>`;
+  }
+  renderMetrics(); renderRedlines(); onTypeChange(); recalcAll();
+}
+function renderMetrics(){
+  document.getElementById('metricGrid').innerHTML=METRICS.map(m=>`
+    <div class="metric">
+      <div class="m-name">${m.name}（${m.desc}）</div>
+      <div class="m-val" id="v_${m.key}">—</div>
+      <input type="number" step="0.1" id="in_${m.key}" placeholder="手工修正值（${m.unit}）" oninput="onMetricInput('${m.key}')">
+      <div class="m-pct" id="p_${m.key}"></div>
+    </div>`).join('');
+}
+function onMetricInput(key){
+  const el=document.getElementById('in_'+key);
+  if(el.value!==''){ M[key]=+el.value; }
+  else{ delete M[key]; }   // 清空手工修正时同步删除，避免残留旧值继续参与评分
+  showMetric(key); recalcAll();
+}
+function showMetric(key){
+  const m=METRICS.find(x=>x.key===key);
+  const v=M[key];
+  document.getElementById('v_'+key).textContent = v===undefined?'—':(+v.toFixed(1)).toLocaleString();
+  const p=percentileOf(key,v);
+  document.getElementById('p_'+key).innerHTML = v===undefined?'':`百分位 <b style="color:${p>=60?'var(--ok)':p>=35?'var(--warn)':'var(--no)'}">${Math.round(p)}</b>（对照基线${CFG.baselines[key].length}家样本）`;
+}
+function percentileOf(key,v){
+  const bl=CFG.baselines[key]||[];
+  if(!bl.length||v===undefined) return 50;
+  const m=METRICS.find(x=>x.key===key);
+  const n=bl.length;
+  let cnt=0;
+  if(m.type==='higher'){ for(const b of bl){ if(b<=v)cnt++; } }
+  else{ for(const b of bl){ if(b>=v)cnt++; } }  // 距离类反向计
+  return cnt/n*100;
+}
+
+/* ================= ① 地址解析 ================= */
+function hashStr(s){let h=0;for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))>>>0;}return h;}
+function jsonp(url,timeoutMs){
+  return new Promise((resolve,reject)=>{
+    const cb='cb_'+Math.random().toString(36).slice(2);
+    const s=document.createElement('script');
+    const t=setTimeout(()=>{cleanup();reject(new Error('timeout'));},timeoutMs||8000);
+    function cleanup(){clearTimeout(t);delete window[cb];s.remove();}
+    window[cb]=(d)=>{cleanup();resolve(d);};
+    s.onerror=()=>{cleanup();reject(new Error('network'));};
+    s.src=url+(url.includes('?')?'&':'?')+'callback='+cb;
+    document.body.appendChild(s);
+  });
+}
+async function fetchJson(url,opts,timeoutMs){
+  const ctrl=new AbortController();
+  const t=setTimeout(()=>ctrl.abort(),timeoutMs||10000);
+  try{
+    const r=await fetch(url,{...(opts||{}),signal:ctrl.signal});
+    if(!r.ok) throw new Error('http '+r.status);
+    return await r.json();
+  }finally{ clearTimeout(t); }
+}
+async function geocodeNominatim(q){
+  const r=await fetchJson('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=cn&q='+encodeURIComponent(q),{headers:{'Accept':'application/json'}},10000);
+  return (r&&r.length)?{lng:+r[0].lon,lat:+r[0].lat}:null;
+}
+async function geocodePhoton(q){
+  const r=await fetchJson('https://photon.komoot.io/api/?limit=1&q='+encodeURIComponent(q),null,10000);
+  return (r&&r.features&&r.features.length)?{lng:r.features[0].geometry.coordinates[0],lat:r.features[0].geometry.coordinates[1]}:null;
+}
+const AMAP_LEVEL={'门牌':'门牌级','兴趣点':'小区/兴趣点级','道路':'道路级','乡镇':'街道/乡镇级','村庄':'村级','区县':'区县级','城市':'城市级','省份':'省级','国家':'国家级','公交站':'公交站级','地铁站':'地铁站级','商圈':'商圈级'};
+async function analyzeAddr(){
+  const base=document.getElementById('addr').value.trim();
+  const detail=(document.getElementById('addrDetail').value||'').trim();
+  if(!base){alert('请输入门店地址');return;}
+  const addr=base+detail; // 拼接小区/门牌，精度聚焦到社区
+  const st=document.getElementById('geoStatus');
+  st.value='解析中…（高德通道）';
+  const setLoc=(lng,lat,src)=>{
+    document.getElementById('lng').value=(+lng).toFixed(6);
+    document.getElementById('lat').value=(+lat).toFixed(6);
+    st.value=src;
+  };
+  // 通道1：高德地理编码（中文门牌/小区级地址最准，8秒超时后自动降级）
+  if(CFG.amapKey){
+    try{
+      const city=CITY&&CITY.cityName!=='自定义城市'?CITY.cityName:'';
+      const g=await jsonp(`https://restapi.amap.com/v3/geocode/geo?key=${CFG.amapKey}&address=${encodeURIComponent(addr)}${city?`&city=${encodeURIComponent(city)}`:''}`,8000);
+      if(g.status==='1'&&g.geocodes&&g.geocodes.length){
+        const loc=g.geocodes[0].location.split(',');
+        const lv=AMAP_LEVEL[g.geocodes[0].level]||g.geocodes[0].level||'';
+        const coarse=/区县级|城市级|省级|道路级|街道\/乡镇级/.test(lv);
+        setLoc(loc[0],loc[1],'高德解析成功'+(lv?'（命中：'+lv+'）':'')+(coarse?'，精度偏粗，请核对坐标':''));
+        return;
+      }
+    }catch(e){}
+    st.value='高德未命中或超时，转OSM通道…';
+  }else{
+    st.value='解析中…（未配置高德Key，走OSM通道，境外服务可能较慢）';
+  }
+  // 通道2/3：OSM Nominatim 与 Photon（无需Key，各10秒超时）。OSM对中国门牌级地址覆盖弱，
+  // 故逐级放宽：完整地址（含小区/门牌）→ 不含小区门牌的街道地址 → 去门牌号 → 仅保留到道路/片区级
+  const stripDoor=s=>s.replace(/[0-9０-９]+[号号楼栋座室].*$/,'');
+  const stripNum=s=>s.replace(/[0-9０-９].*$/,'');
+  const candidates=[addr, base, stripDoor(addr), stripNum(addr), stripDoor(base), stripNum(base)].filter((v,i,a)=>v&&a.indexOf(v)===i);
+  for(const q of candidates){
+    try{ const r=await geocodeNominatim(q); if(r){ setLoc(r.lng,r.lat,q===addr?'OSM解析成功':'OSM解析成功（放宽到道路/片区级，请核对坐标）'); return; } }catch(e){}
+    try{ const r=await geocodePhoton(q); if(r){ setLoc(r.lng,r.lat,q===addr?'OSM-Photon解析成功':'OSM-Photon解析成功（放宽到道路/片区级，请核对坐标）'); return; } }catch(e){}
+  }
+  st.value='自动解析失败';
+  alert('自动解析失败（OSM对中国小区/门牌级地址覆盖有限）。\n两条出路：\n① 在管理页配置高德Key（小区/门牌级命中率最高）；\n② 手工输入经纬度：打开 amap.com → 找到门店位置 → 右键拾取坐标 → 填入下方经度/纬度，精度可达米级。');
+  document.getElementById('lng').focus();
+}
+
+/* ================= ② Overpass 量特征提取 ================= */
+async function fetchOsm(){
+  const lat=+document.getElementById('lat').value, lng=+document.getElementById('lng').value;
+  if(!(lat&&lng)){alert('请先解析门店地址获取坐标');return;}
+  const btn=document.getElementById('osmBtn'), st=document.getElementById('osmStatus');
+  btn.disabled=true; st.textContent='正在向Overpass API请求数据（约10–30秒）…';
+  try{
+    const L=`${lat},${lng}`;
+    const q=`[out:json][timeout:50];(
+      nwr(around:500,${L})[amenity~"^(restaurant|cafe|fast_food|bar|pub)$"];
+      nwr(around:3000,${L})[shop=mall];
+      node(around:3000,${L})[railway=subway_entrance];
+      node(around:300,${L})[highway=bus_stop];
+      node(around:150,${L})[highway=crossing];
+      nwr(around:300,${L})[amenity=parking];
+      way(around:120,${L})[highway~"^(primary|secondary|tertiary|residential|unclassified|living_street|pedestrian|service)$"];
+      way(around:500,${L})[highway~"^(primary|secondary|tertiary|residential|unclassified|living_street|pedestrian)$"];
+      way(around:500,${L})[building];
+      nwr(around:300,${L})[shop=mall];
+      way(around:500,${L})[building=office];
+      way(around:500,${L})[building~"^(residential|apartments)$"];
+    );out geom;`;
+    const mirrors=[
+      'https://overpass-api.de/api/interpreter',
+      'https://overpass.kumi.systems/api/interpreter',
+      'https://overpass.private.coffee/api/interpreter',
+      'https://overpass.nchc.org.tw/api/interpreter'
+    ];
+    let r=null,lastErr=null;
+    for(const url of mirrors){
+      try{
+        st.textContent='正在请求Overpass（'+new URL(url).host+'）…';
+        r=await fetchJson(url,{method:'POST',body:'data='+encodeURIComponent(q)},30000);
+        break;
+      }catch(err){ lastErr=err; }
+    }
+    if(!r) throw lastErr||new Error('all mirrors failed');
+    const el=r.elements||[];
+    const hav=(a,b,c,d)=>{const R=6371000,rad=x=>x*Math.PI/180;
+      const dLa=rad(c-a),dLo=rad(d-b);
+      const h=Math.sin(dLa/2)**2+Math.cos(rad(a))*Math.cos(rad(c))*Math.sin(dLo/2)**2;
+      return 2*R*Math.asin(Math.sqrt(h));};
+    let food=0,bus=0,cross=0,park=0,mall300=0;
+    let mallMin=1e9,subMin=1e9,roads120=0,streetLen=0,bldArea=0,officeN=0,resN=0;
+    for(const e of el){
+      const t=e.tags||{};
+      const c=e.center||(e.geometry&&e.geometry.length?{lat:e.geometry[0].lat,lon:e.geometry[0].lon}:(e.lat!==undefined?{lat:e.lat,lon:e.lon}:null));
+      const d=c?hav(lat,lng,c.lat,c.lon):1e9;
+      if(t.amenity&&/^(restaurant|cafe|fast_food|bar|pub)$/.test(t.amenity)) food++;
+      else if(t.shop==='mall'){ if(d<mallMin)mallMin=d; if(d<=300)mall300++; }
+      else if(t.railway==='subway_entrance'){ if(d<subMin)subMin=d; }
+      else if(t.highway==='bus_stop') bus++;
+      else if(t.highway==='crossing') cross++;
+      else if(t.amenity==='parking') park++;
+      else if(t.building==='office') officeN++;
+      else if(t.building&&/^(residential|apartments)$/.test(t.building)) resN++;
+      else if(t.building&&e.geometry&&e.geometry.length>2){
+        // 建筑面积=轮廓面积×层数
+        let area=0; const g=e.geometry;
+        for(let i=0;i<g.length-1;i++){
+          area+=(g[i].lon*111320*Math.cos(lat*Math.PI/180))*(g[i+1].lat*110574)-(g[i+1].lon*111320*Math.cos(lat*Math.PI/180))*(g[i].lat*110574);
+        }
+        area=Math.abs(area)/2;
+        const lv=+t['building:levels']||+(t.height?Math.round(+t.height/3):2)||2;
+        bldArea+=area*Math.min(lv,50);
+      }
+      else if(t.highway&&e.type==='way'){
+        if(d<=120+50) roads120++;  // way中心近似
+        if(e.geometry&&e.geometry.length>1){
+          for(let i=0;i<e.geometry.length-1;i++){
+            streetLen+=hav(e.geometry[i].lat,e.geometry[i].lon,e.geometry[i+1].lat,e.geometry[i+1].lon);
+          }
+        }
+      }
+    }
+    M={
+      bldArea500:bldArea/10000, food500:food,
+      mallDist:mallMin>=1e9?3000:Math.round(mallMin),
+      subwayDist:subMin>=1e9?3000:Math.round(subMin),
+      bus300:bus, cross150:cross, park300:park,
+      roads120:roads120, streetLen500:Math.round(streetLen)
+    };
+    OSM_EXTRA={mall300,officeN,resN};
+    METRICS.forEach(m=>{ document.getElementById('in_'+m.key).value=M[m.key]; showMetric(m.key); });
+    st.textContent='提取完成（真实数据，来源OpenStreetMap）';
+    runTree();
+    recalcAll();
+  }catch(e){
+    st.textContent='Overpass请求失败（网络或限流），请重试或手工填报9项指标';
+  }finally{
+    btn.disabled=false;
+  }
+}
+
+/* ================= ③ 商圈类型决策树 ================= */
+function runTree(){
+  const {mall300,officeN,resN}=OSM_EXTRA;
+  const tot=officeN+resN;
+  const ratio=tot>0?officeN/tot*100:null;
+  let result,path;
+  if(mall300>0){ result='商超店'; path=`300m内有商场（${mall300}个）→ 商场型`; }
+  else if(ratio===null){ result='混合街铺'; path=`300m内无商场；办公/住宅样本不足（办公${officeN}、住宅${resN}），无法计算占比 → 默认混合街铺，请人工确认`; }
+  else if(ratio>55){ result='写字楼店'; path=`300m内无商场；办公占比 ${ratio.toFixed(0)}%（办公${officeN}/（办公${officeN}+住宅${resN}））> 55% → 写字楼型`; }
+  else if(ratio<22){ result='社区店'; path=`300m内无商场；办公占比 ${ratio.toFixed(0)}% < 22% → 社区型`; }
+  else{ result='混合街铺'; path=`300m内无商场；办公占比 ${ratio.toFixed(0)}% 处于22%–55%之间 → 混合街铺`; }
+  document.getElementById('typeAuto').value=result;
+  document.getElementById('typeFinal').value=result;
+  document.getElementById('treeBox').textContent=
+`决策树执行路径：
+${path}
+
+判定规则（固定）：
+① 300m内有商场 → 商场型（商超店）
+② 否则 办公/(办公+住宅) > 55% → 写字楼型
+③ 否则 占比 < 22% → 社区型
+④ 中间（22%–55%）→ 混合街铺`;
+  onTypeChange();
+}
+function onTypeChange(){
+  const t=document.getElementById('typeFinal').value;
+  const notes={
+    "社区店":"财务翻床率假设 "+CFG.turnRates["社区店"]+" 次/床·日；核心看常住人口与复购。",
+    "商超店":"财务翻床率假设 "+CFG.turnRates["商超店"]+" 次/床·日；警惕高租金与低复购。",
+    "写字楼店":"财务翻床率假设 "+CFG.turnRates["写字楼店"]+" 次/床·日；工作日双峰、周末空转。",
+    "混合街铺":"财务翻床率假设 "+CFG.turnRates["混合街铺"]+" 次/床·日；兼顾客流与复购，重点验证晚市与周末结构。",
+    "旅游景区店":"财务翻床率假设 "+CFG.turnRates["旅游景区店"]+" 次/床·日；一次性消费为主，原则上不适合标准店重资产模型，须总部专项审批。"
+  };
+  document.getElementById('typeNote').textContent=notes[t];
+  document.getElementById('fTurn').value=CFG.turnRates[t];
+  recalcAll();
+}
+
+/* ================= ④ 红线 ================= */
+const REDLINES=[
+  {id:'rl1',q:'排烟条件：物业书面许可排烟，且具备可行排烟路径（商务公寓10楼以上无独立排烟＝不符合）'},
+  {id:'rl2',q:'层高条件：吊顶＋排烟施工后室内净高 ≥ 2.4m'},
+  {id:'rl3',q:'电力条件：电容量 ≥ 8kW，或物业允许低成本增容'},
+  {id:'rl4',q:'产权条件：产权清晰无纠纷，房产用途含商业/综合，非小产权'},
+  {id:'rl5',q:'租约条件：可签约租期 ≥ 2年'}
+];
+function renderRedlines(){
+  document.getElementById('redlines').innerHTML=REDLINES.map(r=>`
+    <div class="redline">
+      <div class="q">${r.q}</div>
+      <div class="radio-row">
+        <label><input type="radio" name="${r.id}" value="pass" onchange="recalcAll()">符合</label>
+        <label><input type="radio" name="${r.id}" value="fail" onchange="recalcAll()">不符合（一票否决）</label>
+      </div>
+    </div>`).join('');
+}
+function redlineState(){
+  let fails=[],unchecked=[];
+  for(const r of REDLINES){
+    const v=document.querySelector(`input[name=${r.id}]:checked`);
+    if(!v)unchecked.push(r.id);
+    else if(v.value==='fail')fails.push(r.q);
+  }
+  return {fails,unchecked};
+}
+
+/* ================= ⑤ 百分位评分 ================= */
+function val(id){ const e=document.getElementById(id); return e&&e.value!==''?+e.value:null; }
+
+function computeBlocks(){
+  // —— 位置模型：三组两级平均 ——
+  const gTraffic=[],gAccess=[],gQuality=[];
+  const missing=[];
+  const push=(arr,key,label)=>{ if(M[key]!==undefined) arr.push(percentileOf(key,M[key])); else missing.push(label); };
+  push(gTraffic,'bldArea500','500m建筑面积');
+  push(gTraffic,'food500','500m餐饮数');
+  const age=val('in_age');
+  if(age!==null) gTraffic.push(age); else missing.push('30-65岁人口占比');  // 档位值即百分位得分
+  push(gAccess,'subwayDist','地铁口距离');
+  push(gAccess,'bus300','公交站数');
+  push(gAccess,'cross150','过街设施');
+  push(gAccess,'park300','停车场数');
+  push(gQuality,'mallDist','商场距离');
+  push(gQuality,'roads120','道路数');
+  push(gQuality,'streetLen500','街道总长');
+  const gap=val('in_gap');
+  if(gap!==null) gQuality.push(gap); else missing.push('差异化卡位');
+  const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+  const gT=avg(gTraffic),gA=avg(gAccess),gQ=avg(gQuality);
+  const gs=[gT,gA,gQ].filter(x=>x!==null);
+  const locPct=gs.length?gs.reduce((x,y)=>x+y,0)/gs.length:null;   // 两级平均后的位置百分位
+  const locScore=locPct!==null?locPct/100*CFG.wLoc:null;
+
+  // —— 商业经济性（20分）——
+  let dParts=[],dMiss=[];
+  const rent=val('in_d1'),area=val('in_d2');
+  if(rent&&area){
+    const u=rent/area/30;
+    document.getElementById('in_d3').value=u.toFixed(2);
+    const b=CFG.rentBench;
+    dParts.push(u<=b?100:u<=b*1.4?75:u<=b*1.8?50:u<=b*2.2?25:0);
+  }else{ document.getElementById('in_d3').value=''; dMiss.push('租金单价'); }
+  ['in_d4'].forEach(id=>{ const v=val(id); if(v!==null)dParts.push(v); else dMiss.push(id); });
+  const dScore=dParts.length?dParts.reduce((a,b)=>a+b,0)/dParts.length/100*CFG.wD:null;
+
+  // —— 工程合规余量（10分）——
+  let eParts=[],eMiss=[];
+  const e2=val('in_e2'); if(e2!==null)eParts.push(e2>=25?100:e2>=15?80:e2>=12?60:40); else eMiss.push('电量');
+  const e3=val('in_e3'); if(e3!==null)eParts.push(e3===0?100:e3<=10?80:e3<=20?50:20); else eMiss.push('排烟长度');
+  const eScore=eParts.length?eParts.reduce((a,b)=>a+b,0)/eParts.length/100*CFG.wE:null;
+
+  // —— 增长与稳定性（10分）——
+  let fParts=[],fMiss=[];
+  ['in_f2','in_f3'].forEach(id=>{ const v=val(id); if(v!==null)fParts.push(v); else fMiss.push(id); });
+  const fScore=fParts.length?fParts.reduce((a,b)=>a+b,0)/fParts.length/100*CFG.wF:null;
+
+  return {
+    blocks:{位置模型:locScore,商业经济性:dScore,工程合规余量:eScore,增长与稳定性:fScore},
+    weights:{位置模型:CFG.wLoc,商业经济性:CFG.wD,工程合规余量:CFG.wE,增长与稳定性:CFG.wF},
+    groups:{gT,gA,gQ}, missing:missing.concat(dMiss.map(x=>'商业:'+x),eMiss,fMiss.map(x=>'增长:'+x))
+  };
+}
+
+function recalcAll(){
+  const rl=redlineState();
+  const rv=document.getElementById('redlineVerdict');
+  const r=computeBlocks();
+  // 位置模型明细
+  const fmt=x=>x===null?'—':x.toFixed(0);
+  document.getElementById('locScoreDetail').innerHTML=
+    `客流基础组 <b>${fmt(r.groups.gT)}</b> 分｜可达性组 <b>${fmt(r.groups.gA)}</b> 分｜位置质量组 <b>${fmt(r.groups.gQ)}</b> 分`+
+    `　→　组间平均 <b>${fmt(r.groups.gT!==null&&r.groups.gA!==null&&r.groups.gQ!==null?(r.groups.gT+r.groups.gA+r.groups.gQ)/3:null)}</b> 分 × 权重${CFG.wLoc}%`+
+    (r.groups.gA===null||r.groups.gT===null||r.groups.gQ===null?'<br><span style="color:var(--warn)">（有指标未填写，当前为部分数据试算）</span>':'');
+  document.getElementById('d3rule').textContent=`≤基准${CFG.rentBench}元/㎡/天→100｜≤1.4倍→75｜≤1.8倍→50｜≤2.2倍→25`;
+  // 板块小分
+  document.getElementById('groupscore').innerHTML=Object.keys(r.blocks).map(k=>{
+    const v=r.blocks[k],w=r.weights[k];
+    const bad=v!==null&&v/w<0.4;
+    return `<div class="cell ${bad?'bad':''}"><div class="n">${k}（${w}分）</div><div class="v">${v===null?'—':v.toFixed(1)}</div>${bad?'<div style="font-size:11px;color:var(--no)">得分率<40%，降级</div>':''}</div>`;
+  }).join('');
+  // 竞争提示（按城市教育度区分语境：成熟区"竞品多"≠坏事，空白区"竞品少"≠好事）
+  const comp=val('in_comp'),subs=val('in_subs');
+  const edu=(CITY&&CITY.edu)||'爬坡';
+  let hints='';
+  if(comp!==null){
+    if(comp>=5) hints+=`<div class="alert-strip no">直接竞品（1km内艾灸馆 ${comp} 家）：红海警示——5家以上正面竞争，原则上放弃该点位，除非客群质量有代际优势</div>`;
+    else if(comp>=3) hints+=`<div class="alert-strip warn">直接竞品（1km内艾灸馆 ${comp} 家）：${edu==='成熟'?'成熟区的密度竞争——市场已被验证，竞品多不等于坏事，胜负在差异化（服务＋零售双驱动）与点位质量':'竞争偏热——需依赖差异化与服务半径错位取胜'}</div>`;
+    else if(comp===0) hints+=`<div class="alert-strip ${edu==='空白'?'warn':'ok'}">直接竞品（1km内艾灸馆 0 家）：${edu==='空白'?'空白区的教育成本——竞品少不等于机会，可能意味着"为艾灸付费"的习惯尚未形成，爬坡期按4–6个月、获客成本上浮估算':'无正面竞品——市场空间成立，仍须验证教育度'}</div>`;
+    else hints+=`<div class="alert-strip ok">直接竞品（1km内艾灸馆 ${comp} 家）：健康区间（1–2家）——市场已被教育且留有空间</div>`;
+  }
+  if(subs!==null) hints+=`<div class="alert-strip ${subs>=3?'ok':subs>=1?'warn':'no'}">调理/健康业态（500m内 ${subs} 家）：${subs>=3?'客群调理习惯已被充分教育，具备品类转换与互导卡项基础（广东83%涉艾门店即由这类业态加装艾灸，可为参照）':subs>=1?'有一定调理客群基础，生态位一般':'周边几乎无调理业态——警惕该商圈"为身体付费"的习惯尚未形成，客群共享与信任背书缺失'}</div>`;
+  document.getElementById('compHints').innerHTML=hints;
+
+  const box=document.getElementById('resultBox');
+  const fin=document.getElementById('finCard');
+  const finHint=document.getElementById('finHint');
+
+  if(rl.fails.length){
+    rv.innerHTML=`<div class="result-box rs-no" style="padding:14px"><div class="level">红线未通过：直接淘汰</div><div class="desc">触发：${rl.fails.join('；')}</div></div>`;
+    box.className='result-box rs-no';
+    document.getElementById('finalScore').textContent='✕';
+    document.getElementById('finalLevel').textContent='一票否决';
+    document.getElementById('finalDesc').textContent='该点位触碰工程/合规红线，不进入评分与财务测算环节。';
+    document.getElementById('verdictText').textContent='放弃该点位；如为加盟商现铺，出具《硬条件整改告知书》或建议换址。';
+    fin.style.display='none';
+    finHint.textContent='💡 红线未通过，财务测算已关闭——触碰红线的点位不具备测算意义。';
+    return;
+  }
+  rv.innerHTML=rl.unchecked.length
+    ?`<div class="banner demo">红线核查尚未完成（${rl.unchecked.length}项未勾选），以下为试算结果，不具决策效力。</div>`
+    :`<div class="banner live">红线核查通过（5/5）。</div>`;
+
+  const total=Math.round(Object.values(r.blocks).reduce((a,v)=>a+(v||0),0));
+  const g=CFG.lGood,o=CFG.lOk,w=CFG.lWarn;
+  let tier,cls;
+  if(total>=g){tier='优先选址，果断开店';cls='rs-ok';}
+  else if(total>=o){tier='可开店，优化经营方案';cls='rs-ok';}
+  else if(total>=w){tier='谨慎开店，需整改调整';cls='rs-warn';}
+  else{tier='不建议开店';cls='rs-no';}
+  const lowBlocks=Object.keys(r.blocks).filter(k=>r.blocks[k]!==null&&r.blocks[k]/r.weights[k]<0.4);
+  let downgraded=false;
+  if(lowBlocks.length&&tier!=='不建议开店'){
+    downgraded=true;
+    if(tier==='优先选址，果断开店'){tier='可开店，优化经营方案';cls='rs-ok';}
+    else if(tier==='可开店，优化经营方案'){tier='谨慎开店，需整改调整';cls='rs-warn';}
+    else{tier='不建议开店';cls='rs-no';}
+  }
+  box.className='result-box '+cls;
+  document.getElementById('finalScore').textContent=total;
+  document.getElementById('finalLevel').textContent=tier+(r.missing.length?'（试算）':'');
+  document.getElementById('finalDesc').textContent=
+    (downgraded?`因板块「${lowBlocks.join('、')}」得分率低于40%，结论自动降一档。`:'')+
+    `分数线：≥${g}优先｜≥${o}可开｜≥${w}谨慎｜<${w}否决`;
+  document.getElementById('verdictText').textContent=rl.unchecked.length||r.missing.length
+    ?`存在未完成项（红线${rl.unchecked.length}项、指标${r.missing.length}项），当前为部分数据试算。`
+    :(cls==='rs-no'?'综合条件不达标，建议放弃或重新谈判关键条款后复评。':'评分通过，可进入财务测算，并将本报告导出归档。');
+
+  // 财务区开关
+  if(total>=o&&!rl.unchecked.length){
+    fin.style.display=''; finHint.textContent='';
+    if(!document.getElementById('fRent').value)document.getElementById('fRent').value=document.getElementById('in_d1').value||'';
+    if(!document.getElementById('fArea').value)document.getElementById('fArea').value=document.getElementById('in_d2').value||'';
+    if(!document.getElementById('fLabor').value){
+      const k=(CITY?CITY.k1:1);
+      document.getElementById('fLabor').value=Math.round((4*6500+9000)*k/100)*100;
+    }
+    if(!document.getElementById('fPrice').value){
+      const k=(CITY?CITY.k1*CITY.k2:1);
+      document.getElementById('fPrice').value=Math.round(CFG.basePrice*k);
+    }
+    if(!document.getElementById('fDeposit').value){
+      document.getElementById('fDeposit').value=(+document.getElementById('fRent').value||0)*3;
+    }
+    if(!document.getElementById('fDecor').value){
+      document.getElementById('fDecor').value=Math.round((+document.getElementById('fArea').value||0)*CFG.decorCost/1000)*1000;
+    }
+    calcFin();
+  }else{
+    fin.style.display='none';
+    finHint.textContent='💡 简版财务测算默认隐藏，将在「五项红线全部勾选通过」且「综合评分≥'+o+'分」后自动展开。当前：红线已勾选'+(5-rl.unchecked.length)+'/5项，综合评分'+total+'分。';
+  }
+}
+
+/* ================= ⑦ 财务测算 ================= */
+function calcFin(){
+  const rent=+document.getElementById('fRent').value||0;
+  const beds=+document.getElementById('fBeds').value||0;
+  const labor=+document.getElementById('fLabor').value||0;
+  const other=+document.getElementById('fOther').value||0;
+  const price=+document.getElementById('fPrice').value||0;
+  const turn=+document.getElementById('fTurn').value||0;
+  const varRate=(+document.getElementById('fVar').value||0)/100;
+  const days=+document.getElementById('fDays').value||30;
+  const decor=+document.getElementById('fDecor').value||0;
+  const transfer=+document.getElementById('fTransfer').value||0;
+  const deposit=+document.getElementById('fDeposit').value||0;
+  const retail=+document.getElementById('fRetail').value||0;
+  const out=document.getElementById('finOut');
+  if(!(price>0&&beds>0)){out.innerHTML='<div class="hint">请完整填写财务参数。</div>';return;}
+  const fixed=rent+labor+other;
+  const beRev=varRate<1?fixed/(1-varRate):0;
+  const beOrders=price>0?Math.max(0,(beRev-retail))/price:0;
+  const bePerDay=days>0?beOrders/days:0;
+  const svcRev=beds*turn*days*price;
+  const estRev=svcRev+retail;
+  const estProfit=estRev*(1-varRate)-fixed;
+  const invest=decor+transfer+deposit;
+  const payback=estProfit>0?invest/estProfit:Infinity;
+  const rentRatio=estRev>0?rent/estRev*100:0;
+  const fmt=n=>n.toLocaleString('zh-CN',{maximumFractionDigits:0});
+  const edu=(CITY&&CITY.edu)||'爬坡';
+  const ramp={'成熟':'2–3','爬坡':'3–4','空白':'4–6'}[edu];
+  out.innerHTML=`
+    <div class="kv"><span>月固定成本（租金＋人工＋其他）</span><b>${fmt(fixed)} 元</b></div>
+    <div class="kv"><span>盈亏平衡月营收（服务＋零售合计口径）</span><b>${fmt(beRev)} 元</b></div>
+    <div class="kv"><span>盈亏平衡日均服务人次（扣除零售贡献后）</span><b>${bePerDay.toFixed(1)} 人次/天（${beds>0?(bePerDay/beds).toFixed(2):'—'} 次/床·日）</b></div>
+    <div class="kv"><span>预计月营收（服务 ${fmt(svcRev)} ＋ 零售 ${fmt(retail)}）</span><b>${fmt(estRev)} 元</b></div>
+    <div class="kv"><span>行业基准校验：年营收50万元（月均4.2万）是57.1%同行门店达不到的线</span><b style="color:${estRev>=42000?'var(--ok)':'var(--no)'}">${estRev>=42000?'高于校验线':'低于校验线，假设偏乐观或点位偏弱'}</b></div>
+    <div class="kv"><span>客单价基准校验：行业主力价格带100–200元占40.0%、200–400元占32.9%</span><b style="color:${price>=100&&price<=400?'var(--ok)':'var(--warn)'}">${price} 元${price>=100&&price<=400?'，落于主力带内':'，偏离主力价格带，须给出依据'}</b></div>
+    <div class="kv"><span>预计月净利润</span><b style="color:${estProfit>0?'var(--ok)':'var(--no)'}">${fmt(estProfit)} 元</b></div>
+    <div class="kv"><span>初始投入（装修＋转让费＋押金）</span><b>${fmt(invest)} 元</b></div>
+    <div class="kv"><span>预计回本周期</span><b style="color:${payback<=18?'var(--ok)':payback<=30?'var(--warn)':'var(--no)'}">${payback===Infinity?'无法回本（月净利≤0）':payback.toFixed(1)+' 个月'}</b></div>
+    <div class="kv"><span>租金占预计营收比</span><b style="color:${rentRatio<=12?'var(--ok)':rentRatio<=17?'var(--warn)':'var(--no)'}">${rentRatio.toFixed(1)}%（健康线≤12%，警戒线17%）</b></div>
+    <div class="note">测算口径：翻床率为含坐灸位折算的全床日均周转（次/床·日），成熟店参考值2.0–3.0（频次上限参照：固生堂会员年就诊4.9次，A级审计口径）；本城为${edu}区，爬坡期按 ${ramp} 个月、60% 营收折算；产品零售收入对应"轻手法重产品"战略的居家延续产品线；变动成本率含耗材与提成，未含所得税与总部管理费。回本周期≤18个月为优，18–30个月可接受，>30个月建议重谈租金或放弃。</div>
+    <div class="note" style="color:var(--no);background:#fbeeed;border-color:#ecc6c2">合规红线（定价与营销前置过滤）：①疗程/储值卡单卡面值≤5,000元（记名卡法定上限），建议卡值带2,000–5,000元（对标固生堂会员年消费2,799元），"充一万送三千"式打法违规；②引流款宣传话术去疗效化，不得使用医疗用语（违者构成非法行医，2026年已有35万元罚款案例）；③服务菜单禁用针刺、瘢痕灸、发泡灸、牵引、扳法——悬灸＋器械灸＋产品零售的"轻手法重产品"路线全部落在合法区间。</div>`;
+}
+
+/* ================= 演示数据填充 / 摘要复制 ================= */
+function setVal(id,v){ document.getElementById(id).value=v; }
+function fillDemo(){
+  if(!confirm('将填入一套示例数据（量特征9项＋红线＋踏勘项），用于无网络环境下的完整流程演示。继续？')) return;
+  M={bldArea500:42,food500:96,mallDist:450,subwayDist:320,bus300:5,cross150:3,park300:4,roads120:5,streetLen500:5600};
+  OSM_EXTRA={mall300:0,officeN:6,resN:18};
+  METRICS.forEach(m=>{ setVal('in_'+m.key,M[m.key]); showMetric(m.key); });
+  document.getElementById('osmStatus').textContent='已填入演示数据（示例值，非真实抓取；正式评估请用上方按钮实时提取）';
+  runTree();
+  REDLINES.forEach(r=>{ document.querySelector(`input[name=${r.id}][value=pass]`).checked=true; });
+  setVal('in_age','75'); setVal('in_gap','85');
+  setVal('in_comp','2'); setVal('in_subs','4');
+  setVal('in_d1','13500'); setVal('in_d2','110'); setVal('in_d4','80');
+  setVal('in_e2','15'); setVal('in_e3','10');
+  setVal('in_f2','70'); setVal('in_f3','100');
+  recalcAll();
+}
+function copySummary(){
+  const rl=redlineState();
+  const r=computeBlocks();
+  const total=Math.round(Object.values(r.blocks).reduce((a,v)=>a+(v||0),0));
+  const tier=document.getElementById('finalLevel').textContent;
+  const type=document.getElementById('typeFinal').value;
+  const lines=[
+    '【标准店点位评估摘要】',
+    '城市：'+(CITY?`${CITY.cityName}（K₁×K₂=${CITY.score}，${CITY.level}，教育度${CITY.edu||'爬坡'}区）`:'未做城市准入'),
+    '商圈类型：'+type+'（决策树：'+document.getElementById('typeAuto').value+'）',
+    '红线核查：'+(rl.fails.length?'未通过——'+rl.fails.join('；'):(rl.unchecked.length?`未完成（${rl.unchecked.length}项未勾选）`:'5/5通过')),
+    '板块得分：位置模型 '+r.blocks['位置模型']?.toFixed(1)+'/' +CFG.wLoc+'｜商业经济 '+r.blocks['商业经济性']?.toFixed(1)+'/'+CFG.wD+'｜工程余量 '+r.blocks['工程合规余量']?.toFixed(1)+'/'+CFG.wE+'｜增长稳定 '+r.blocks['增长与稳定性']?.toFixed(1)+'/'+CFG.wF,
+    '综合评分：'+total+' 分 → '+tier,
+    '结论：'+document.getElementById('verdictText').textContent,
+    '评估时间：'+new Date().toLocaleString('zh-CN')
+  ];
+  const txt=lines.join('\n');
+  const done=()=>alert('评估摘要已复制到剪贴板，可直接粘贴到汇报文档。');
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done).catch(()=>{prompt('复制失败，请手动复制：',txt);}); }
+  else{ prompt('请手动复制：',txt); }
+}
+
+/* ================= 管理页 ================= */
+function openAdmin(){
+  document.getElementById('adminModal').style.display='flex';
+  document.getElementById('adminLock').style.display='';
+  document.getElementById('adminBody').style.display='none';
+  document.getElementById('adminPwd').value='';
+}
+function closeAdmin(){document.getElementById('adminModal').style.display='none';}
+function unlockAdmin(){
+  const pwd=CFG.pwd||'demo2026';
+  if(document.getElementById('adminPwd').value===pwd){
+    document.getElementById('adminLock').style.display='none';
+    document.getElementById('adminBody').style.display='';
+    ['wLoc','wD','wE','wF','lGood','lOk','lWarn'].forEach(k=>document.getElementById(k).value=CFG[k]);
+    document.getElementById('cfgPrice').value=CFG.basePrice;
+    document.getElementById('cfgDecor').value=CFG.decorCost;
+    document.getElementById('tSq').value=CFG.turnRates["社区店"];
+    document.getElementById('tSc').value=CFG.turnRates["商超店"];
+    document.getElementById('tXzl').value=CFG.turnRates["写字楼店"];
+    document.getElementById('tHh').value=CFG.turnRates["混合街铺"];
+    document.getElementById('tJq').value=CFG.turnRates["旅游景区店"];
+    document.getElementById('cfgBaselines').value=JSON.stringify(CFG.baselines);
+  }else alert('密码错误');
+}
+function saveAdmin(){
+  const ws=['wLoc','wD','wE','wF'].map(k=>+document.getElementById(k).value);
+  if(ws.reduce((a,b)=>a+b,0)!==100){alert('四大板块权重之和必须等于100（当前：'+ws.reduce((a,b)=>a+b,0)+'）');return;}
+  let bl;
+  try{ bl=JSON.parse(document.getElementById('cfgBaselines').value); if(!bl||!bl.food500) throw 0; }
+  catch(e){ alert('基线库JSON格式错误，未保存。'); return; }
+  ['wLoc','wD','wE','wF','lGood','lOk','lWarn'].forEach(k=>CFG[k]=+document.getElementById(k).value);
+  CFG.basePrice=+document.getElementById('cfgPrice').value;
+  CFG.decorCost=+document.getElementById('cfgDecor').value||1500;
+  CFG.turnRates={"社区店":+document.getElementById('tSq').value,"商超店":+document.getElementById('tSc').value,"写字楼店":+document.getElementById('tXzl').value,"混合街铺":+document.getElementById('tHh').value,"旅游景区店":+document.getElementById('tJq').value};
+  CFG.baselines=bl;
+  localStorage.setItem(LS_CFG,JSON.stringify(CFG));
+  closeAdmin(); METRICS.forEach(m=>showMetric(m.key)); onTypeChange(); recalcAll();
+  alert('设置已保存。');
+}
+function resetPointCfg(){
+  if(!confirm('确认将点位评估参数恢复出厂值？'))return;
+  for(const k in POINT_DEFAULTS)CFG[k]=JSON.parse(JSON.stringify(POINT_DEFAULTS[k]));
+  localStorage.setItem(LS_CFG,JSON.stringify(CFG));
+  closeAdmin(); METRICS.forEach(m=>showMetric(m.key)); onTypeChange(); recalcAll();
+  alert('已恢复出厂值。');
+}
+
+init();
+</script>
+</body>
+</html>

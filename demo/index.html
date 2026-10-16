@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XX品牌选址模型 · 第一步：城市准入评估</title>
+<style>
+:root{
+  --ink:#2b2b2b; --sub:#6b6b6b; --line:#e5e0d8; --bg:#f7f4ee; --card:#ffffff;
+  --brand:#8c3b2e; --brand-soft:#f3e6e2; --gold:#b98a2f; --ok:#2e7d4f; --warn:#b7791f; --no:#b3352b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7}
+.wrap{max-width:960px;margin:0 auto;padding:32px 20px 80px}
+header.top{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px double var(--brand);padding-bottom:16px;margin-bottom:8px}
+h1{font-size:26px;color:var(--brand);letter-spacing:2px}
+.step-tag{font-size:13px;color:#fff;background:var(--brand);border-radius:4px;padding:3px 10px;display:inline-block;margin-bottom:6px;letter-spacing:3px}
+.sub{color:var(--sub);font-size:14px}
+.gear{cursor:pointer;font-size:20px;color:var(--sub);border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:#fff}
+.banner{margin:14px 0;padding:10px 16px;border-radius:8px;font-size:13px}
+.banner.demo{background:#fff8e6;border:1px solid #ecd9a0;color:#7a5b12}
+.banner.live{background:#e9f5ee;border:1px solid #bfe0cd;color:#256b45}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px;margin-top:20px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h2{font-size:18px;color:var(--brand);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.card h2 .num{background:var(--brand);color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;flex:none}
+.card .hint{font-size:13px;color:var(--sub);margin-bottom:14px}
+.grid{display:grid;gap:14px}
+.grid.c2{grid-template-columns:1fr 1fr}
+.grid.c3{grid-template-columns:1fr 1fr 1fr}
+@media(max-width:720px){.grid.c2,.grid.c3{grid-template-columns:1fr}}
+label{font-size:13px;color:var(--sub);display:block;margin-bottom:4px}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:#fff;color:var(--ink)}
+input:focus,select:focus{outline:2px solid var(--brand-soft);border-color:var(--brand)}
+button{cursor:pointer;border:none;border-radius:8px;padding:11px 22px;font-size:15px;letter-spacing:1px}
+.btn-main{background:var(--brand);color:#fff}
+.btn-main:hover{background:#753126}
+.btn-ghost{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+.btn-line{background:#f0ece4;color:var(--ink)}
+.kv{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.kv b{font-weight:600}
+.formula{background:#faf7f1;border:1px solid var(--line);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--sub);font-family:ui-monospace,Consolas,monospace;margin:10px 0;white-space:pre-wrap}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600}
+.pill.ok{background:#e2f1e8;color:var(--ok)} .pill.warn{background:#f8ecd4;color:var(--warn)} .pill.no{background:#f7dedb;color:var(--no)}
+.result-box{border-radius:12px;padding:24px;text-align:center;margin-top:10px}
+.result-box .score{font-size:52px;font-weight:700;line-height:1.1}
+.result-box .level{font-size:20px;font-weight:600;margin-top:4px}
+.result-box .desc{font-size:13px;color:var(--sub);margin-top:8px}
+.rs-ok{background:#e9f5ee;border:1px solid #bfe0cd}.rs-ok .score,.rs-ok .level{color:var(--ok)}
+.rs-warn{background:#fdf6e4;border:1px solid #ecd9a0}.rs-warn .score,.rs-warn .level{color:var(--warn)}
+.rs-no{background:#fbeeed;border:1px solid #ecc6c2}.rs-no .score,.rs-no .level{color:var(--no)}
+.slider-row{display:flex;align-items:center;gap:14px}
+.slider-row input[type=range]{flex:1}
+.slider-val{width:64px;text-align:center;font-weight:600;color:var(--brand)}
+details{margin-top:14px;border:1px solid var(--line);border-radius:8px;background:#faf8f4}
+details summary{cursor:pointer;padding:10px 14px;font-size:14px;font-weight:600;color:var(--brand)}
+details .body{padding:0 16px 14px;font-size:13px;color:var(--sub)}
+table.mini{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+table.mini th,table.mini td{border:1px solid var(--line);padding:6px 8px;text-align:left}
+table.mini th{background:#f3efe7}
+.next-bar{margin-top:28px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+#adminModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;align-items:flex-start;justify-content:center;overflow:auto}
+#adminModal .panel{background:#fff;border-radius:12px;max-width:760px;width:94%;margin:40px auto;padding:28px}
+#adminModal h3{color:var(--brand);margin-bottom:14px}
+.k2bar{position:relative;height:34px;background:linear-gradient(90deg,#f7dedb 0%,#f8ecd4 18%,#e2f1e8 38%,#e2f1e8 62%,#f8ecd4 80%,#f7dedb 100%);border-radius:8px;margin:14px 0 6px}
+.k2marker{position:absolute;top:-8px;width:4px;height:50px;background:var(--brand);border-radius:2px;transition:left .3s}
+.k2labels{display:flex;justify-content:space-between;font-size:11px;color:var(--sub)}
+.k1bars{display:grid;gap:8px;margin-top:10px}
+.k1bar-row{display:grid;grid-template-columns:170px 1fr 70px;align-items:center;gap:10px;font-size:12px;color:var(--sub)}
+.k1bar-track{height:10px;background:#f0ece4;border-radius:6px;overflow:hidden}
+.k1bar-fill{height:100%;background:linear-gradient(90deg,var(--brand),#b0604f);border-radius:6px;transition:width .3s}
+.hist-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;font-size:13px;cursor:pointer;background:#faf8f4}
+.hist-item:hover{border-color:var(--brand)}
+.hist-item .t{color:var(--sub);font-size:12px}
+footer.ver{text-align:center;color:var(--sub);font-size:12px;margin-top:36px}
+@media print{
+  body{background:#fff}
+  .no-print{display:none!important}
+  .card{box-shadow:none;break-inside:avoid}
+  .wrap{padding:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div>
+    <span class="step-tag">第一步 / 共两步</span>
+    <h1>城市准入评估</h1>
+    <div class="sub">XX品牌标准店选址模型 · 串行闸口第一关：这座城市值不值得进 ｜ <a href="overview.html" style="color:var(--brand)">模型总览 →</a></div>
+  </div>
+  <div class="gear no-print" onclick="openAdmin()" title="管理设置">⚙</div>
+</header>
+
+<div id="modeBanner" class="banner demo no-print">演示模式：未配置地图API Key，POI数据为系统生成的演示数据，结论仅供流程验证。点击右上角 ⚙ 填入高德Web服务Key后切换真实数据。</div>
+
+<!-- ① 城市选择 -->
+<div class="card">
+  <h2><span class="num">1</span>选择目标城市</h2>
+ <div class="hint">从内置城市参数库选择（v2026-09：粤鄂湘江浙城市已按区域市场教育度研究更新参数并附教育度标签）；库外城市请选择「自定义」并手工录入三项基本面数据（来源：该市统计局年度公报、第一财经城市商业魅力排行榜）。</div>
+  <div class="grid c2">
+    <div>
+      <label>城市</label>
+      <select id="citySelect" onchange="onCityChange()"></select>
+    </div>
+    <div>
+      <label>城市线级（内置城市自动带出；自定义城市手工选择）</label>
+      <select id="cityTier" onchange="onTierChange()" disabled>
+        <option value="">—</option>
+        <option>一线</option><option>新一线</option><option>二线</option>
+        <option>三线</option><option>四线</option><option>五线</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- ② K1 城市消费力系数 -->
+<div class="card">
+  <h2><span class="num">2</span>K₁ 城市消费力系数</h2>
+  <div class="hint">衡量该城市居民为健康服务付费的能力。K₁ 直接作用于点位评估页的客单价基准与营收测算。</div>
+  <div class="grid c3">
+    <div><label>全体居民人均可支配收入（元/年）</label><input id="income" type="number" oninput="calc()"></div>
+    <div><label>医疗保健消费占消费支出比重（%）</label><input id="health" type="number" step="0.1" oninput="calc()"></div>
+    <div><label>商业线级固定值（按线级映射：一线100／新一线75／二线55／三线40／四线35／五线25）</label><input id="charm" readonly></div>
+  </div>
+  <div class="formula" id="k1Formula"></div>
+  <div class="kv"><span>K₁ 城市消费力系数（基准＝1.00）</span><b id="k1Val" style="color:var(--brand);font-size:18px">—</b></div>
+  <div class="k1bars" id="k1Bars"></div>
+  <details class="no-print">
+    <summary>K₁ 公式说明与数据来源</summary>
+    <div class="body">
+      K₁ = 0.5 ×（该市人均可支配收入 ÷ 全国均值）＋ 0.3 ×（该市医疗保健支出占比 ÷ 全国均值9.0%）＋ 0.2 ×（商业线级固定值 ÷ 75）。<br>
+      三项权重可在管理页调整。收入数据取自各市《国民经济和社会发展统计公报》；医疗保健占比取自统计局消费支出分项；商业线级固定值依据第一财经·新一线城市研究所公开发布的城市分级名单映射（一线100／新一线75／二线55／三线40／四线35／五线25，归一锚点75＝新一线），<b>名单公开可查，每个分值都有出处</b>。同城级城市间的细微差异由收入与医疗保健两个硬指标承担。<br>
+      <b>注意：内置收入数值为演示用示例值，正式启用前须由总部按最新公报逐项核验替换（管理页可编辑）。</b>外部系数只定初值，每新增20家门店应以实际客单价残差回归校准一次。
+    </div>
+  </details>
+</div>
+
+<!-- ③ K2 健康业态成熟度系数 -->
+<div class="card">
+  <h2><span class="num">3</span>K₂ 健康业态成熟度系数</h2>
+  <div class="hint">衡量该城艾灸/养生市场的教育程度与竞争烈度。供给太少＝市场未教育，太多＝红海，中间为甜蜜点（钟形曲线）。</div>
+  <div class="grid c2">
+    <div>
+      <label>城区常住人口（万人）</label>
+      <input id="pop" type="number" oninput="calc()">
+    </div>
+    <div>
+      <label>艾灸养生类POI总数（艾灸＋养生馆＋足疗按摩＋中医馆）</label>
+      <div style="display:flex;gap:8px">
+        <input id="poiTotal" type="number" oninput="calc()" style="flex:1">
+        <button class="btn-line no-print" onclick="fetchPoi()" id="poiBtn">自动获取</button>
+      </div>
+    </div>
+  </div>
+  <div class="k2bar"><div class="k2marker" id="k2Marker" style="left:50%"></div></div>
+  <div class="k2labels"><span>0 未教育</span><span>2 起步</span><span>5–12 甜蜜点</span><span>20 红海</span><span>30+ 过热</span></div>
+  <div class="hint" style="margin-top:4px">横轴：每万人艾灸养生类POI密度（家/万人）</div>
+  <div class="grid c2" style="margin-top:10px">
+    <div>
+      <label>密度（家/万人，自动计算）</label>
+      <input id="density" readonly>
+    </div>
+    <div>
+      <label>K₂ 初值（钟形分段函数，自动）</label>
+      <input id="k2Base" readonly>
+    </div>
+  </div>
+  <div style="margin-top:14px">
+    <label>总部人工修正（实地踏勘后对K₂初值 ±20% 修正）</label>
+    <div class="slider-row">
+      <span>-20%</span>
+      <input type="range" id="k2Slider" min="-20" max="20" value="0" oninput="calc()">
+      <span>+20%</span>
+      <span class="slider-val" id="k2SliderVal">0%</span>
+    </div>
+  </div>
+  <div class="kv" style="margin-top:10px"><span>K₂ 最终值</span><b id="k2Val" style="color:var(--brand);font-size:18px">—</b></div>
+  <details class="no-print">
+    <summary>K₂ 分段函数定义（为什么这么设）</summary>
+    <div class="body">
+      <table class="mini">
+        <tr><th>密度 d（家/万人）</th><th>K₂ 初值</th><th>市场状态与含义</th></tr>
+        <tr><td>d &lt; 2</td><td>0.85</td><td>未教育市场：无消费习惯，获客成本高，谨慎进入</td></tr>
+        <tr><td>2 ≤ d &lt; 5</td><td>0.95</td><td>起步期：已有零星供给，教育成本可控</td></tr>
+        <tr><td>5 ≤ d &lt; 12</td><td>1.08</td><td>甜蜜点：需求被验证且未饱和，最佳进入窗口</td></tr>
+        <tr><td>12 ≤ d &lt; 20</td><td>0.95</td><td>竞争升温：需依赖差异化与点位质量取胜</td></tr>
+        <tr><td>d ≥ 20</td><td>0.80</td><td>红海：供给严重过剩，原则上暂缓</td></tr>
+      </table>
+      密度 d ＝ 全市艾灸/养生馆/足疗按摩/中医馆POI总数 ÷ 城区常住人口（万人）。POI口径：高德地图关键词检索「艾灸｜养生馆｜足疗｜按摩｜中医馆」。甜蜜点区间（5–12）为管理页可调参数，应随门店实际经营数据回归修正。<br>
+      <b>v2026-09 校准说明</b>：演示模式下，全国艾灸馆前十城市（上海/成都/重庆/广州/深圳/北京/杭州/长沙/武汉/西安，前瞻产业研究院2024-04口径）及粤鄂湘江浙重点城市的演示密度已按该证据设为甜蜜点区间（5–12家/万人），与「存量教育形成供给自循环」的研究结论一致；正式决策必须配置高德Key使用真实POI。
+    </div>
+  </details>
+</div>
+
+<!-- ④ 准入结论 -->
+<div class="card">
+  <h2><span class="num">4</span>城市准入结论</h2>
+  <div class="hint">综合准入值 ＝ K₁ × K₂。对照阈值表：≥1.10 准入｜0.85–1.10 谨慎准入｜＜0.85 暂缓进入。阈值可在管理页调整。</div>
+  <div id="resultBox" class="result-box rs-warn">
+    <div class="score" id="finalScore">—</div>
+    <div class="level" id="finalLevel">请选择城市</div>
+    <div class="desc" id="finalDesc"></div>
+  </div>
+  <div class="kv"><span>区域教育度标签（同分排序用，不计入乘积）</span><b id="eduTag">—</b></div>
+  <div class="kv"><span>建议动作</span><b id="adviceText">—</b></div>
+  <div class="kv"><span>进入点位评估时携带参数</span><b id="carryParams">—</b></div>
+</div>
+
+<!-- ⑤ 评估记录 -->
+<div class="card no-print" id="histCard" style="display:none">
+  <h2><span class="num">5</span>本机评估记录</h2>
+  <div class="hint">仅保存在当前浏览器本地（localStorage，最近10条），不上传任何数据。点击记录可重新载入该城市复算。</div>
+  <div id="histList"></div>
+</div>
+
+<div class="next-bar no-print">
+  <button class="btn-line" onclick="window.print()">导出PDF / 打印</button>
+  <button class="btn-main" id="nextBtn" onclick="goNext()">城市准入通过 → 进入点位评估</button>
+</div>
+
+<footer class="ver no-print">XX品牌选址模型 v2026-10 ｜ 纯前端单文件应用 · 数据仅存浏览器本地 · 公式与参数可在 ⚙ 管理页审阅</footer>
+
+</div>
+
+<!-- 管理页 -->
+<div id="adminModal">
+  <div class="panel">
+    <h3>管理设置（总部专用）</h3>
+    <div id="adminLock">
+      <label>管理密码</label>
+      <div style="display:flex;gap:8px">
+        <input type="password" id="adminPwd" placeholder="默认 demo2026" style="flex:1">
+        <button class="btn-main" onclick="unlockAdmin()">解锁</button>
+        <button class="btn-line" onclick="closeAdmin()">关闭</button>
+      </div>
+    </div>
+    <div id="adminBody" style="display:none">
+      <div class="grid c2">
+        <div><label>高德Web服务API Key</label><input id="cfgKey" placeholder="留空＝演示模式"></div>
+        <div><label>修改管理密码</label><input id="cfgPwd" placeholder="留空则不修改"></div>
+      </div>
+      <div class="grid c3" style="margin-top:12px">
+        <div><label>K₁收入权重</label><input id="cfgW1" type="number" step="0.05"></div>
+        <div><label>K₁医疗权重</label><input id="cfgW2" type="number" step="0.05"></div>
+        <div><label>K₁商业权重</label><input id="cfgW3" type="number" step="0.05"></div>
+      </div>
+      <div class="grid c3" style="margin-top:12px">
+        <div><label>准入阈值（K₁×K₂ ≥）</label><input id="cfgPass" type="number" step="0.05"></div>
+        <div><label>谨慎阈值（K₁×K₂ ≥）</label><input id="cfgCaution" type="number" step="0.05"></div>
+        <div><label>全国收入基准（元）</label><input id="cfgBase" type="number"></div>
+      </div>
+      <div class="grid c2" style="margin-top:12px">
+        <div><label>K₂甜蜜点下限（家/万人）</label><input id="cfgK2lo" type="number"></div>
+        <div><label>K₂甜蜜点上限（家/万人）</label><input id="cfgK2hi" type="number"></div>
+      </div>
+      <label style="margin-top:12px">城市参数库（JSON，可编辑后保存）</label>
+      <textarea id="cfgCities" rows="10" style="font-family:ui-monospace,Consolas,monospace;font-size:12px"></textarea>
+      <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+        <button class="btn-main" onclick="saveAdmin()">保存设置</button>
+        <button class="btn-ghost" onclick="resetAdmin()">恢复出厂设置</button>
+        <button class="btn-line" onclick="closeAdmin()">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= 默认配置与数据 ================= */
+const LS_CFG = 'xunai_admin_cfg';
+const LS_CITY = 'xunai_city_pass';
+const LS_HIST = 'xunai_eval_hist';
+
+/* 城市参数库（v2026-09）：[城市, 线级, 城区人口(万), 人均可支配收入(元), 医疗保健占比(%), 商业线级固定值, 区域教育度标签]
+   教育度标签（成熟/爬坡/空白）依据《XX品牌_区域市场教育与行业竞品定价补充研究_2026-09》：
+   艾灸馆前十城市 + 国家中医药综合改革示范区省份（粤/湘/浙/沪）+ 湖北试验区城市 → 成熟区；
+   其余一二线城市 → 爬坡区；非四大区域的三四五线城市 → 空白区。
+   标签仅作同分城市的优先级排序（tie-breaker），不进入 K₁×K₂ 乘积（研究报告1.7节方法论红线）。
+   粤/浙/鄂/湘城市医疗保健占比按"高于全国均值"的研究结论上调0.5pct（正式启用前按最新统计公报核验）。 */
+const DEFAULT_CITIES = [
+["北京","一线",2185,85415,10.8,100,"成熟"],["上海","一线",2487,88366,10.8,96,"成熟"],["深圳","一线",1779,81123,10.4,93,"成熟"],["广州","一线",1883,78100,10.6,90,"成熟"],
+["成都","新一线",2127,50600,9.6,88,"成熟"],["杭州","新一线",1252,75600,10.2,85,"成熟"],["重庆","新一线",2110,39700,9.2,83,"成熟"],["武汉","新一线",1377,57000,10.0,81,"成熟"],
+["苏州","新一线",1296,77500,9.9,79,"成熟"],["西安","新一线",1316,44900,9.8,77,"成熟"],["南京","新一线",954,74600,10.0,76,"成熟"],["长沙","新一线",1061,62000,9.8,74,"成熟"],
+["郑州","新一线",1301,45300,9.1,71,"爬坡"],["天津","新一线",1364,53500,10.2,70,"爬坡"],["青岛","新一线",1038,58500,9.6,68,"爬坡"],["宁波","新一线",978,74000,9.7,67,"成熟"],
+["合肥","新一线",985,58000,9.0,66,"爬坡"],["东莞","新一线",1044,67000,9.3,65,"成熟"],["佛山","新一线",965,68000,9.4,63,"成熟"],
+["昆明","二线",868,45600,9.4,58,"爬坡"],["沈阳","二线",920,49300,10.4,56,"爬坡"],["厦门","二线",536,73500,9.3,60,"爬坡"],["福州","二线",847,56000,9.2,57,"爬坡"],
+["无锡","二线",750,72000,9.6,59,"成熟"],["济南","二线",944,56500,9.7,55,"爬坡"],["大连","二线",754,50000,10.1,52,"爬坡"],["温州","二线",976,71000,9.5,54,"成熟"],
+["珠海","二线",250,68000,9.3,53,"成熟"],["泉州","二线",888,57000,8.7,50,"爬坡"],["烟台","二线",710,54000,9.8,48,"爬坡"],
+["石家庄","三线",1123,38000,9.9,45,"空白"],["哈尔滨","三线",988,38000,10.6,46,"空白"],["长春","三线",908,34000,10.3,44,"空白"],["南昌","三线",657,49000,9.1,47,"空白"],
+["贵阳","三线",610,47000,9.3,43,"空白"],["南宁","三线",894,36000,8.9,42,"空白"],["太原","三线",545,44000,10.0,44,"空白"],["兰州","三线",442,38000,10.5,38,"空白"],
+["乌鲁木齐","三线",410,44000,9.8,40,"空白"],["呼和浩特","三线",355,52000,10.1,39,"空白"],["海口","三线",294,43000,8.8,41,"空白"],
+["徐州","三线",902,41000,9.4,40,"空白"],["洛阳","三线",707,35000,9.2,36,"空白"],["绵阳","三线",490,43000,9.3,35,"空白"],
+["宜昌","三线",392,44000,9.5,34,"成熟"],["襄阳","三线",526,43000,9.4,33,"成熟"],["银川","四线",290,43000,10.2,30,"空白"],["西宁","四线",248,36000,10.4,28,"空白"]
+];
+
+const DEFAULT_CFG = {
+  amapKey:'', pwd:'demo2026',
+  w1:0.5, w2:0.3, w3:0.2,
+  passK:1.10, cautionK:0.85, baseIncome:41314,
+  k2lo:5, k2hi:12,
+  cities: DEFAULT_CITIES
+};
+
+let CFG = loadCfg();
+
+function loadCfg(){
+  try{
+    const s = localStorage.getItem(LS_CFG);
+    if(s){
+      const c = JSON.parse(s);
+      if(c && c.cities && c.cities.length){
+        // 版本迁移：旧版分数线语义（百分制）作废，改用K₁×K₂乘积阈值
+        if(c.passK===undefined){ c.passK=DEFAULT_CFG.passK; c.cautionK=DEFAULT_CFG.cautionK; }
+        delete c.passLine; delete c.cautionLine;
+        // 结构迁移（v2026-09）：城市库升级为7列（含区域教育度标签），旧6列库整体替换为新版默认库
+        if(c.cities[0].length<7){ c.cities=JSON.parse(JSON.stringify(DEFAULT_CITIES)); }
+        return c;
+      }
+    }
+  }catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT_CFG));
+}
+function saveCfg(){ localStorage.setItem(LS_CFG, JSON.stringify(CFG)); }
+
+/* ================= 初始化 ================= */
+function init(){
+  const sel = document.getElementById('citySelect');
+  sel.innerHTML = '<option value="">— 请选择城市 —</option>' +
+    CFG.cities.map((c,i)=>`<option value="${i}">${c[0]}（${c[1]}${c[6]?'·'+c[6]+'区':''}）</option>`).join('') +
+    '<option value="custom">自定义城市（手工录入）</option>';
+  renderModeBanner();
+  // 如果之前已有准入记录，回填
+  try{
+    const p = JSON.parse(localStorage.getItem(LS_CITY)||'null');
+    if(p && p.cityName){
+      const idx = CFG.cities.findIndex(c=>c[0]===p.cityName);
+      if(idx>=0){ sel.value = idx; onCityChange(); }
+    }
+  }catch(e){}
+}
+function renderModeBanner(){
+  const b = document.getElementById('modeBanner');
+  if(CFG.amapKey){
+    b.className='banner live no-print';
+    b.textContent='真实数据模式：已配置高德API Key，POI数据实时拉取。';
+  }else{
+    b.className='banner demo no-print';
+    b.textContent='演示模式：未配置地图API Key，POI数据为系统生成的演示数据，结论仅供流程验证。点击右上角 ⚙ 填入高德Web服务Key后切换真实数据。';
+  }
+}
+
+/* 线级固定值映射（方案B：依据第一财经公开分级名单，归一锚点75＝新一线） */
+const TIER_SCORE = {"一线":100,"新一线":75,"二线":55,"三线":40,"四线":35,"五线":25};
+
+function onTierChange(){
+  const t = document.getElementById('cityTier').value;
+  document.getElementById('charm').value = TIER_SCORE[t]||'';
+  calc();
+}
+
+function onCityChange(){
+  const v = document.getElementById('citySelect').value;
+  const tierSel = document.getElementById('cityTier');
+  if(v===''){ tierSel.disabled=true; clearInputs(); return; }
+  if(v==='custom'){
+    tierSel.disabled=false; tierSel.value='';
+    ['income','health','charm','pop','poiTotal'].forEach(id=>document.getElementById(id).value='');
+    calc(); return;
+  }
+  tierSel.disabled=true;
+  const c = CFG.cities[+v];
+  tierSel.value = c[1];
+  document.getElementById('pop').value = c[2];
+  document.getElementById('income').value = c[3];
+  document.getElementById('health').value = c[4];
+  document.getElementById('charm').value = TIER_SCORE[c[1]]||'';
+  // 演示模式：按城市名生成确定性POI数
+  if(!CFG.amapKey){ document.getElementById('poiTotal').value = demoPoiCount(c[0], c[2]); }
+  else { document.getElementById('poiTotal').value=''; }
+  calc();
+}
+function clearInputs(){
+  ['cityTier','pop','income','health','charm','poiTotal','density','k2Base'].forEach(id=>document.getElementById(id).value='');
+  calc();
+}
+
+/* 确定性伪随机：同一城市每次结果一致 */
+function hashStr(s){ let h=0; for(let i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))>>>0; } return h; }
+/* 演示密度（家/万人，v2026-09按研究证据校准）：全国艾灸馆前十城市及粤鄂湘江浙重点城市
+   设为5–12家/万人的甜蜜点区间，与前瞻产业研究院城市排名及示范区身份对应；
+   未列出城市仍为确定性伪随机。正式决策必须配置高德Key拉取真实POI。 */
+const DEMO_DENSITY = {"上海":11,"广州":10.5,"深圳":9.5,"成都":9,"杭州":9,"武汉":8.5,"重庆":8,"长沙":8,
+  "北京":7,"苏州":7.5,"南京":7.5,"佛山":7.5,"宁波":7,"东莞":7,"无锡":7,"西安":6.5,"珠海":6.5,"温州":6.5,
+  "厦门":6.5,"青岛":6,"福州":6,"郑州":6,"天津":6,"宜昌":6,"襄阳":5.5};
+function demoPoiCount(city, pop){
+  if(DEMO_DENSITY[city]!==undefined) return Math.round(DEMO_DENSITY[city]*pop);
+  const h = hashStr(city+'poi');
+  const perWan = 1 + (h % 180)/10;   // 1.0 ~ 18.9 家/万人
+  return Math.round(perWan * pop);
+}
+
+/* ================= 计算 ================= */
+function k2BaseOf(d){
+  if(!(d>=0)) return null;
+  if(d < 2) return 0.85;
+  if(d < CFG.k2lo) return 0.95;
+  if(d < CFG.k2hi) return 1.08;
+  if(d < 20) return 0.95;
+  return 0.80;
+}
+function calc(){
+  const income = +document.getElementById('income').value || 0;
+  const health = +document.getElementById('health').value || 0;
+  const charm  = +document.getElementById('charm').value || 0;
+  const pop    = +document.getElementById('pop').value || 0;
+  const poi    = +document.getElementById('poiTotal').value || 0;
+  const slider = +document.getElementById('k2Slider').value || 0;
+  document.getElementById('k2SliderVal').textContent = (slider>0?'+':'')+slider+'%';
+
+  // K1
+  let k1 = null;
+  if(income>0 && health>0 && charm>0){
+    k1 = CFG.w1*(income/CFG.baseIncome) + CFG.w2*(health/9.0) + CFG.w3*(charm/75);
+    document.getElementById('k1Val').textContent = k1.toFixed(3);
+    document.getElementById('k1Formula').textContent =
+      `K₁ = ${CFG.w1}×(${income}/${CFG.baseIncome}) + ${CFG.w2}×(${health}/9.0) + ${CFG.w3}×(${charm}/75) = ${k1.toFixed(3)}`;
+    renderK1Bars(income, health, charm);
+  }else{
+    document.getElementById('k1Val').textContent='—';
+    document.getElementById('k1Formula').textContent='请完整填写三项基本面数据。';
+    document.getElementById('k1Bars').innerHTML='';
+  }
+
+  // K2
+  let k2 = null, d = null;
+  if(pop>0 && poi>=0 && document.getElementById('poiTotal').value!==''){
+    d = poi/pop;
+    const base = k2BaseOf(d);
+    k2 = Math.min(1.2, Math.max(0.7, base*(1+slider/100)));
+    document.getElementById('density').value = d.toFixed(1);
+    document.getElementById('k2Base').value = base.toFixed(2);
+    document.getElementById('k2Val').textContent = k2.toFixed(3);
+    // marker position: 0-30 mapped to 0-100%
+    const pos = Math.min(100, d/30*100);
+    document.getElementById('k2Marker').style.left = `calc(${pos}% - 2px)`;
+  }else{
+    document.getElementById('density').value='';
+    document.getElementById('k2Base').value='';
+    document.getElementById('k2Val').textContent='—';
+  }
+
+  // 综合：K₁×K₂乘积对照阈值表
+  const box = document.getElementById('resultBox');
+  if(k1!==null && k2!==null){
+    const prod = k1*k2;
+    document.getElementById('finalScore').textContent = prod.toFixed(3);
+    // 区域教育度标签（成熟/爬坡/空白）：仅作同分优先级排序与爬坡期参数，不进入K₁×K₂（避免与K₂密度、K₁保健占比重复计算）
+    const v0 = document.getElementById('citySelect').value;
+    const edu = (v0!==''&&v0!=='custom') ? (CFG.cities[+v0][6]||'爬坡') : '—';
+    const eduDesc = {'成熟':'成熟区（示范区/前十城市，认知成本低，爬坡期2–3个月）','爬坡':'爬坡区（认知成本中等，爬坡期3–4个月）','空白':'空白区（教育成本高，爬坡期4–6个月）','—':'—'};
+    document.getElementById('eduTag').textContent = eduDesc[edu]||edu;
+    let level, cls, advice;
+    if(prod >= CFG.passK){
+      level='准 入'; cls='rs-ok';
+      advice='可进入第二步点位评估；建议按城市能级规划年度开店数上限。';
+    }else if(prod >= CFG.cautionK){
+      level='谨慎准入'; cls='rs-warn';
+      advice='允许进入点位评估，但应提高点位分数线要求（建议80分起），并控制首批开店数量（≤2家试点）。';
+    }else{
+      level='暂缓进入'; cls='rs-no';
+      advice='城市消费力或市场成熟度不足，建议暂缓；如需战略性进入，须总部专项审批。';
+    }
+    box.className='result-box '+cls;
+    document.getElementById('finalLevel').textContent = level;
+    document.getElementById('finalDesc').textContent =
+      `K₁=${k1.toFixed(3)}（消费力）× K₂=${k2.toFixed(3)}（市场成熟度）＝ ${prod.toFixed(3)} ｜ 阈值表：≥${CFG.passK} 准入，${CFG.cautionK}–${CFG.passK} 谨慎，<${CFG.cautionK} 暂缓`;
+    document.getElementById('adviceText').textContent = advice;
+    document.getElementById('carryParams').textContent = `K₁=${k1.toFixed(3)}，K₂=${k2.toFixed(3)}，客单价修正系数=${prod.toFixed(3)}，教育度=${edu}区`;
+    // 保存通行证
+    const v = document.getElementById('citySelect').value;
+    const cityName = v==='custom' ? '自定义城市' : (v===''?'':CFG.cities[+v][0]);
+    localStorage.setItem(LS_CITY, JSON.stringify({
+      cityName, k1:+k1.toFixed(3), k2:+k2.toFixed(3), score:+prod.toFixed(3), level, edu,
+      pass: prod>=CFG.cautionK, time:new Date().toISOString()
+    }));
+    // 追加本机评估记录（最近10条，仅存浏览器本地）
+    try{
+      const h=JSON.parse(localStorage.getItem(LS_HIST)||'[]');
+      h.unshift({city:cityName, score:+prod.toFixed(3), level, time:new Date().toISOString()});
+      localStorage.setItem(LS_HIST, JSON.stringify(h.slice(0,10)));
+      renderHist();
+    }catch(e){}
+    document.getElementById('nextBtn').style.display = prod>=CFG.cautionK ? '' : 'none';
+  }else{
+    box.className='result-box rs-warn';
+    document.getElementById('finalScore').textContent='—';
+    document.getElementById('finalLevel').textContent='请完整填写数据';
+    document.getElementById('finalDesc').textContent='';
+    document.getElementById('adviceText').textContent='—';
+    document.getElementById('carryParams').textContent='—';
+    document.getElementById('eduTag').textContent='—';
+    document.getElementById('nextBtn').style.display='none';
+  }
+}
+
+/* ================= POI 自动获取 ================= */
+function jsonp(url, timeoutMs){
+  return new Promise((resolve,reject)=>{
+    const cb = 'cb_'+Math.random().toString(36).slice(2);
+    const s = document.createElement('script');
+    const t = setTimeout(()=>{ cleanup(); reject(new Error('timeout')); }, timeoutMs||8000);
+    function cleanup(){ clearTimeout(t); delete window[cb]; s.remove(); }
+    window[cb] = (data)=>{ cleanup(); resolve(data); };
+    s.onerror = ()=>{ cleanup(); reject(new Error('network')); };
+    s.src = url + (url.includes('?')?'&':'?') + 'callback=' + cb;
+    document.body.appendChild(s);
+  });
+}
+async function fetchPoi(){
+  const v = document.getElementById('citySelect').value;
+  if(v===''||v==='custom'){ alert('请先选择内置城市；自定义城市请手工填写POI数。'); return; }
+  const cityName = CFG.cities[+v][0];
+  if(!CFG.amapKey){
+    document.getElementById('poiTotal').value = demoPoiCount(cityName, +document.getElementById('pop').value||100);
+    calc(); return;
+  }
+  const btn = document.getElementById('poiBtn'); btn.disabled=true; btn.textContent='获取中…';
+  try{
+    let total = 0;
+    for(const kw of ['艾灸','养生馆','足疗按摩','中医馆']){
+      const url = `https://restapi.amap.com/v3/place/text?key=${CFG.amapKey}&keywords=${encodeURIComponent(kw)}&city=${encodeURIComponent(cityName)}&citylimit=true&offset=1&page=1`;
+      const r = await jsonp(url);
+      if(r.status==='1'){ total += +r.count||0; }
+    }
+    document.getElementById('poiTotal').value = total;
+    calc();
+  }catch(e){
+    alert('POI获取失败，请检查Key或改为手工填写。');
+  }finally{
+    btn.disabled=false; btn.textContent='自动获取';
+  }
+}
+
+/* ================= 下一步 ================= */
+function goNext(){
+  const p = JSON.parse(localStorage.getItem(LS_CITY)||'null');
+  if(!p || !p.pass){ alert('城市未通过准入，无法进入点位评估。'); return; }
+  location.href = 'evaluation.html';
+}
+
+/* ================= 管理页 ================= */
+function openAdmin(){
+  document.getElementById('adminModal').style.display='flex';
+  document.getElementById('adminLock').style.display='';
+  document.getElementById('adminBody').style.display='none';
+  document.getElementById('adminPwd').value='';
+}
+function closeAdmin(){ document.getElementById('adminModal').style.display='none'; }
+function unlockAdmin(){
+  if(document.getElementById('adminPwd').value === CFG.pwd){
+    document.getElementById('adminLock').style.display='none';
+    document.getElementById('adminBody').style.display='';
+    document.getElementById('cfgKey').value = CFG.amapKey;
+    document.getElementById('cfgW1').value = CFG.w1;
+    document.getElementById('cfgW2').value = CFG.w2;
+    document.getElementById('cfgW3').value = CFG.w3;
+    document.getElementById('cfgPass').value = CFG.passK;
+    document.getElementById('cfgCaution').value = CFG.cautionK;
+    document.getElementById('cfgBase').value = CFG.baseIncome;
+    document.getElementById('cfgK2lo').value = CFG.k2lo;
+    document.getElementById('cfgK2hi').value = CFG.k2hi;
+    document.getElementById('cfgCities').value = JSON.stringify(CFG.cities);
+  }else alert('密码错误');
+}
+function saveAdmin(){
+  const w1=+document.getElementById('cfgW1').value, w2=+document.getElementById('cfgW2').value, w3=+document.getElementById('cfgW3').value;
+  if(Math.abs(w1+w2+w3-1)>0.01){ alert('K₁三项权重之和必须等于1（当前：'+(w1+w2+w3).toFixed(2)+'）'); return; }
+  let cities;
+  try{ cities = JSON.parse(document.getElementById('cfgCities').value); if(!Array.isArray(cities)||!cities.length) throw 0; }
+  catch(e){ alert('城市参数库JSON格式错误，未保存。'); return; }
+  CFG.amapKey = document.getElementById('cfgKey').value.trim();
+  const np = document.getElementById('cfgPwd').value.trim(); if(np) CFG.pwd = np;
+  CFG.w1=w1; CFG.w2=w2; CFG.w3=w3;
+  CFG.passK = +document.getElementById('cfgPass').value;
+  CFG.cautionK = +document.getElementById('cfgCaution').value;
+  CFG.baseIncome = +document.getElementById('cfgBase').value;
+  CFG.k2lo = +document.getElementById('cfgK2lo').value;
+  CFG.k2hi = +document.getElementById('cfgK2hi').value;
+  CFG.cities = cities;
+  saveCfg(); closeAdmin(); renderModeBanner(); init(); calc();
+  alert('设置已保存。');
+}
+function resetAdmin(){
+  if(!confirm('确认恢复出厂设置？所有自定义修改将丢失。')) return;
+  localStorage.removeItem(LS_CFG);
+  CFG = loadCfg(); closeAdmin(); renderModeBanner(); init();
+  alert('已恢复出厂设置。');
+}
+
+/* ================= K₁ 子项可视化 / 评估记录 ================= */
+function renderK1Bars(income, health, charm){
+  const items=[
+    ['收入项（权重'+CFG.w1+'）', CFG.w1*(income/CFG.baseIncome)],
+    ['医疗保健项（权重'+CFG.w2+'）', CFG.w2*(health/9.0)],
+    ['商业线级项（权重'+CFG.w3+'）', CFG.w3*(charm/75)]
+  ];
+  const max=Math.max(...items.map(i=>i[1]),0.001);
+  document.getElementById('k1Bars').innerHTML=items.map(([n,v])=>
+    `<div class="k1bar-row"><span>${n}</span><div class="k1bar-track"><div class="k1bar-fill" style="width:${Math.min(100,v/max*100)}%"></div></div><b style="color:var(--brand);text-align:right">${v.toFixed(3)}</b></div>`).join('');
+}
+function renderHist(){
+  let h=[];
+  try{ h=JSON.parse(localStorage.getItem(LS_HIST)||'[]'); }catch(e){}
+  const card=document.getElementById('histCard'), list=document.getElementById('histList');
+  if(!h.length){ card.style.display='none'; return; }
+  card.style.display='';
+  list.innerHTML=h.map((r,i)=>`<div class="hist-item" onclick="loadHist(${i})"><span><b>${r.city}</b>　${r.level}　综合值 ${r.score}</span><span class="t">${new Date(r.time).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}</span></div>`).join('');
+}
+function loadHist(i){
+  let h=[];
+  try{ h=JSON.parse(localStorage.getItem(LS_HIST)||'[]'); }catch(e){}
+  const r=h[i]; if(!r) return;
+  const idx=CFG.cities.findIndex(c=>c[0]===r.city);
+  if(idx>=0){ document.getElementById('citySelect').value=idx; onCityChange(); window.scrollTo({top:0,behavior:'smooth'}); }
+  else alert('该城市不在当前参数库中（可能已被管理页修改）。');
+}
+
+init(); calc(); renderHist();
+</script>
+</body>
+</html>
